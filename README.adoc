@@ -1,149 +1,164 @@
 = Openshift 4
 
-Deploy Openshift 4 on libvirt using Terraform without Internet access.
+Deploy an **Openshift 4** cluster using UPI method (User Provisioned
+Infrastructure) in a disconnected scenario without a cloud provider to simulate
+a real baremetal environment.
 
-image::assets/architecture.svg[align="center", Openshift 4 disconnected architecture]
+The cluster is deployed on top of **libvirt/kvm** using **Terraform** and every
+step of the installation and configuration is automated to be able to destroy and
+deploy a new cluster in less than 30 minutes.
+
+Red Hat **Quay** has been the chosen registry to store the cluster images.
 
 == Requirements
 
-=== Hardware
+The `+requirements.sh+` script will install all needed requirements:
 
-The minimun requirements allow to deploy a 3 master/worker nodes cluster.
-
-- RAM 32GB
-- vCPU 12
-- Storage 300GB
-
-=== Software
-
-- Libvirt 5.6.0+
-- Terraform 0.12.26+
-- Libvirt provider for Terraform 0.6.2+
-- Openshift client 4.4+
-- FCCT 0.5.0+
-- UnZip 6.00+
-- YQ parser 3.3.2+
-
-=== Install requirements
-
-The `+requirements.sh+` script will install all needed requirements.
-
-[source,bash]
+[source,shell]
 ----
 make require
 ----
 
-==== QEMU permissions
+== QEMU
 
-The provider does not currently support to create volumes with different mode than `+root:root+` so QEMU agent must run as priviledged.
+The provider does not currently support to create volumes with different mode
+than `+root:root+` so QEMU agent must run as priviledged:
 
-[source,bash]
+[source,shell]
 ----
 sed -i '/^#user/s/^#//' /etc/libvirt/qemu.conf
 sed -i '/^#group/s/^#//' /etc/libvirt/qemu.conf
 ----
 
-Restart libvirt daemon.
+Restart libvirt daemon:
 
-[source,bash]
+[source,shell]
 ----
 systemctl restart libvirtd
 ----
 
-==== Download pull secret
+== Pull secret
 
-Get your pull secret from `+cloud.redhat.com+` and copy it to the `+src/openshift-install/${OCP_ENVIRONMENT}+` folder (create the folder for your environment if it does not exist).
+Set the current environment:
 
-[source,bash]
+[source,shell]
+----
+export OCP_ENVIRONMENT="lab"
+----
+
+Get your pull secret from `+cloud.redhat.com+` and copy it to the
+`+src/openshift-install/${OCP_ENVIRONMENT}+` folder (create the folder for your
+environment if it does not exist):
+
+[source,shell]
 ----
 src/openshift-install
- ├── dev
- │   └── pull-secret.json
- ├── pre
- │   └── pull-secret.json
- └── pro
+ └── ${OCP_ENVIRONMENT}
      └── pull-secret.json
 ----
 
 == Install Openshift 4
 
-Deploy Openshift 4 cluster.
+Deploy Openshift 4 cluster:
 
-[source,bash]
+[source,shell]
 ----
 make
 ----
 
 === Mirror registry (disconnected)
 
-Mirror the images used during the installation to the external registry.
+Mirror the images used during the installation to the external registry:
 
-[source,bash]
+[source,shell]
 ----
 ./output/openshift-install/${OCP_ENVIRONMENT}/mirror-release-image.sh
 ----
 
+Go to the Quay GUI to verify that the images have been mirrored (e.g. 
+https://registry.ocp.bmlab.int:5443).
+
 === Bootstrap
 
-Power on `+bootstrap+` node.
+Power on `+bootstrap+` node:
 
-[source,bash]
+[source,shell]
 ----
-virsh start ocp-bootstrap
+virsh start ocp-bootstrap # --console to get logs
 ----
 
 === Control plane
 
-Wait until bootstrap is up and running to power on master nodes.
+Wait until bootstrap is ready to power on master nodes:
 
-[source,bash]
+[source,shell]
 ----
 for i in $(seq 0 2); do virsh start "ocp-master0$i"; done
 ----
 
 === Worker nodes
 
-Wait until master nodes are up and running to power on worker nodes.
+Wait until master nodes are up and running: 
 
-[source,bash]
+[source,shell]
 ----
 ./openshift-install wait-for bootstrap-complete \
-  --dir output/openshift-install/${OCP_ENVIRONMENT}
+	--dir output/openshift-install/${OCP_ENVIRONMENT}
+----
 
+Then, power on worker nodes:
+
+[source,shell]
+----
 for i in $(seq 0 2); do virsh start "ocp-worker0$i"; done
 ----
 
-Approve all pending CSR to allow nodes registration (run the command twice to ensure that all certificates are signed).
+Approve all pending CSR to allow nodes registration (run the command twice to
+ensure that all the certificates are signed):
 
-[source,bash]
+[source,shell]
 ----
-export KUBECONFIG="$(pwd)/output/openshift-install/localhost/auth/kubeconfig"
+export KUBECONFIG="$(pwd)/output/openshift-install/${OCP_ENVIRONMENT}/auth/kubeconfig"
 
 oc get csr \
-    -o go-template='{{range .items}}{{if not .status}}{{.metadata.name}}{{"\n"}}{{end}}{{end}}' |\
+    -o go-template='
+      {{range .items}}
+        {{if not .status}}
+          {{.metadata.name}}{{"\n"}}
+        {{end}}
+      {{end}}' |\
         xargs oc adm certificate approve
 ----
 
-Verify the Openshift cluster is correctly created.
+Wait until the installation is completed:
 
-[source,bash]
+[source,shell]
+----
+./openshift-install wait-for install-complete \
+	--dir output/openshift-install/${OCP_ENVIRONMENT}
+----
+
+Verify the Openshift cluster is correctly created:
+
+[source,shell]
 ----
 oc get nodes
 ----
 
 === Destroy bootstrap node
 
-Finally, shutdown the bootstrap node.
+Finally, shutdown the bootstrap node:
 
-[source,bash]
+[source,shell]
 ----
 virsh shutdown ocp-bootstrap
 ----
 
 == Day-2 operations
 
-Once Openshift 4 has been deployed in can be configured with the instructions in `+day-two+` folder resources.
+Once Openshift 4 has been deployed in can be configured with the instructions in
+`+day-two+` folder resources.
 
 == References
 
-- https://docs.openshift.com/container-platform/4.4/welcome/index.html
+- https://github.com/openshift/openshift-docs

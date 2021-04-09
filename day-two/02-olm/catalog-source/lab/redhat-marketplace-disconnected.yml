@@ -5,7 +5,7 @@ metadata:
   namespace: openshift-marketplace
 spec:
   displayName: Red Hat Marketplace (Disconnected)
-  image: registry.ocp.bmlab.int:5000/olm/redhat-marketplace-index:v4.6-v1
+  image: registry.ocp.bmlab.int:5443/openshift4/olm-redhat-marketplace-index:v4.6-v1
   sourceType: grpc
   publisher: Disconnected
 updateStrategy:

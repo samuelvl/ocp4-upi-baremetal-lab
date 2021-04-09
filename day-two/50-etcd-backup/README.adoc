@@ -1,6 +1,7 @@
 = Openshift 4 backup
 
-The Openshift 4 backup generates 2 different files with the date when it was performed.
+The Openshift 4 backup generates 2 different files with the date when it was
+performed.
 
 [source]
 ----
@@ -8,29 +9,36 @@ The Openshift 4 backup generates 2 different files with the date when it was per
 - static_kuberesources_2020-10-30_153108.tar.gz
 ----
 
-The `+.db+` file is a snapshot of the etcd and the `+.tar.gz+` contains the `+static pods+` of the control plane (etcd, api server, controller manager and scheduler) with their respective certificates and private keys. The backup that is made in a master contains the information of all masters, so it is only necessary to make it in a single master.
+The `+.db+` file is a snapshot of the etcd and the `+.tar.gz+` contains the
+`+static pods+` of the control plane (etcd, api server, controller manager and
+scheduler) with their respective certificates and private keys. The backup that
+is made in a master contains the information of all masters, so it is only
+necessary to make it in a single master.
 
 == CronJob
 
-To do this from within Openshift we will create a `+CronJob+` that runs every day at `+3:30+` in the morning and saves the resulting files in a PVC.
+To do this from within Openshift we will create a `+CronJob+` that runs every
+day at `+3:30+` in the morning and saves the resulting files in a PVC.
 
 Create `+etcd-backup+` namespace.
 
-[source,bash]
+[source,shell]
 ----
 oc apply -f cronjob/00-namespace.yml
 ----
 
-Create RBAC rules. The backup is done using the root user from a master, therefore the SA must use the `+priviledged SCC+`.
+Create RBAC rules. The backup is done using the root user from a master,
+therefore the SA must use the `+priviledged SCC+`.
 
-[source,bash]
+[source,shell]
 ----
 oc apply -f cronjob/01-rbac.yml -n etcd-backup
 ----
 
-Create a PVC to store the resulting backup files (choose size based on etcd size and retention period).
+Create a PVC to store the resulting backup files (choose size based on etcd size
+and retention period).
 
-[source,bash]
+[source,shell]
 ----
 $ oc apply -f cronjob/02-pvc.yml -n etcd-backup
 
@@ -39,9 +47,10 @@ NAME                STATUS   VOLUME              CAPACITY   ACCESS MODES   STORA
 etcd-backup-files   Bound    etcd-backup-files   10Gi        RWX                          8s
 ----
 
-Create the `+CronJob+` to perform the backup periodically (change schedule if needed).
+Create the `+CronJob+` to perform the backup periodically (change schedule if
+needed).
 
-[source,bash]
+[source,shell]
 ----
 $ oc apply -f cronjob/03-cronjob.yml -n etcd-backup
 
@@ -54,7 +63,7 @@ etcd-backup   30 3 * * *   False     0        <none>          3s
 
 To test the backup, run a `+Job+` from the `+CronJob+`.
 
-[source,bash]
+[source,shell]
 ----
 JOB_NAME="etcd-backup-manual-$(date +%s)"
 
@@ -87,7 +96,7 @@ total size is 125,497,687  speedup is 1.00
 
 Verify that the backup has been correctly created in the storage backend.
 
-[source,bash]
+[source,shell]
 ----
 $ ls -alh /var/lib/nfs/data/etcd-backup
 total 73M

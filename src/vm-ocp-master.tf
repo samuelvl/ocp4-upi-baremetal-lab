@@ -11,10 +11,8 @@ locals {
 }
 
 module "ocp_master" {
-
-  source = "./modules/ocp_node"
-  count  = var.ocp_cluster.num_masters
-
+  source       = "./modules/ocp_node"
+  count        = var.ocp_cluster.num_masters
   id           = format("ocp-%s", local.ocp_master[count.index].hostname)
   fqdn         = local.ocp_master[count.index].fqdn
   ignition     = data.local_file.ocp_ignition_master.content

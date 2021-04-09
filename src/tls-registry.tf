@@ -1,3 +1,13 @@
+locals {
+    registry_tls = {
+      certificate = format("%s%s",
+        tls_locally_signed_cert.ocp_registry.cert_pem,
+        tls_self_signed_cert.ocp_root_ca.cert_pem
+      )
+      private_key = tls_private_key.ocp_registry.private_key_pem
+    }
+}
+
 resource "tls_private_key" "ocp_registry" {
   algorithm = "RSA"
   rsa_bits  = 4096
@@ -10,7 +20,7 @@ resource "tls_cert_request" "ocp_registry" {
   subject {
     common_name         = "OCP Registry"
     organization        = "OCP"
-    organizational_unit = "Metal3 Baremetal"
+    organizational_unit = "UPI Baremetal"
     country             = "ES"
     locality            = "Madrid"
     province            = "Madrid"
@@ -43,20 +53,19 @@ resource "tls_locally_signed_cert" "ocp_registry" {
 }
 
 resource "local_file" "ocp_registry_certificate_pem" {
-
-  count = var.DEBUG ? 1 : 0
-
-  filename             = format("output/ca/clients/registry/%s/certificate.pem", var.OCP_ENVIRONMENT)
+  filename             = format("output/ca/clients/registry/%s/certificate.pem",
+    var.OCP_ENVIRONMENT
+  )
   content              = tls_locally_signed_cert.ocp_registry.cert_pem
   file_permission      = "0600"
   directory_permission = "0700"
 }
 
 resource "local_file" "ocp_registry_private_key_pem" {
-
-  count = var.DEBUG ? 1 : 0
-
-  filename             = format("output/ca/clients/registry/%s/private.key", var.OCP_ENVIRONMENT)
+  count                = var.DEBUG ? 1 : 0
+  filename             = format("output/ca/clients/registry/%s/private.key",
+    var.OCP_ENVIRONMENT
+  )
   content              = tls_private_key.ocp_registry.private_key_pem
   file_permission      = "0600"
   directory_permission = "0700"

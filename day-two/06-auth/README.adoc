@@ -2,14 +2,15 @@
 
 Create a local user in `+httpasswd+` format.
 
-[source,bash]
+[source,shell]
 ----
 htpasswd -B oauth/htpasswd.txt ${USER}
 ----
 
-Create an Openshift `+Secret+` in `+openshift-config+` namespace to store this file.
+Create an Openshift `+Secret+` in `+openshift-config+` namespace to store this
+file.
 
-[source,bash]
+[source,shell]
 ----
 oc create secret generic oauth-htpasswd \
     --from-file=htpasswd=oauth/htpasswd.txt -n openshift-config
@@ -17,7 +18,7 @@ oc create secret generic oauth-htpasswd \
 
 Update `+OAuth+` CR to use this secret as source for local authentication.
 
-[source,bash]
+[source,shell]
 ----
 oc apply -f oauth/cluster-auth.yml
 ----

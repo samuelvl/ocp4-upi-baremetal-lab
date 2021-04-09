@@ -1,12 +1,15 @@
 = OLM
 
-The Operator Lifecycle Manager (OLM) helps users install, update, and manage the lifecycle of all Operators and their associated services running across their clusters.
+The Operator Lifecycle Manager (OLM) helps users install, update, and manage the
+lifecycle of all Operators and their associated services running across their
+clusters.
 
 == Disable online catalogs
 
-If the cluster is disconnected, online catalogs are not available and can be safely removed.
+If the cluster is disconnected, online catalogs are not available and can be
+safely removed.
 
-[source,bash]
+[source,shell]
 ----
 oc patch OperatorHub cluster --type json \
     -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
@@ -14,86 +17,87 @@ oc patch OperatorHub cluster --type json \
 
 == Mirror operator catalog
 
-Mirror the catalog image for `+redhat-operators+` (certified-operators and comunnity-operators are also available).
+Mirror the catalog image for `+redhat-operators+` (certified-operators and
+comunnity-operators are also available).
 
-[source,bash]
+[source,shell]
 ----
-source environment/${ENVIRONMENT}.env
+source environment/${OCP_ENVIRONMENT}.env
 
 # Red Hat operators
 ./mirror-olm.sh mirror-catalog \
-    --ocp-release="${OCP_RELEASE}" \
     --catalog-name="redhat-operator" \
+    --ocp-release="${OCP_RELEASE}" \
     --catalog-image="${REDHAT_OPERATORS_DISCONNECTED_IMAGE}" \
-    --registry-auth="../../output/openshift-install/${ENVIRONMENT}/pull-secret.json" \
+    --registry-auth="../../output/openshift-install/${OCP_ENVIRONMENT}/pull-secret.json" \
     --arch="linux/amd64"
 
 # Certified operators
 ./mirror-olm.sh mirror-catalog \
-    --ocp-release="${OCP_RELEASE}" \
     --catalog-name="certified-operator" \
+    --ocp-release="${OCP_RELEASE}" \
     --catalog-image="${CERTIFIED_OPERATORS_DISCONNECTED_IMAGE}" \
-    --registry-auth="../../output/openshift-install/${ENVIRONMENT}/pull-secret.json" \
+    --registry-auth="../../output/openshift-install/${OCP_ENVIRONMENT}/pull-secret.json" \
     --arch="linux/amd64"
 
 # Community operators
 ./mirror-olm.sh mirror-catalog \
-    --ocp-release="${OCP_RELEASE}" \
     --catalog-name="community-operator" \
+    --ocp-release="${OCP_RELEASE}" \
     --catalog-image="${COMMUNITY_OPERATORS_DISCONNECTED_IMAGE}" \
-    --registry-auth="../../output/openshift-install/${ENVIRONMENT}/pull-secret.json" \
+    --registry-auth="../../output/openshift-install/${OCP_ENVIRONMENT}/pull-secret.json" \
     --arch="linux/amd64"
 
 # Red Hat marketplace
 ./mirror-olm.sh mirror-catalog \
-    --ocp-release="${OCP_RELEASE}" \
     --catalog-name="redhat-marketplace" \
+    --ocp-release="${OCP_RELEASE}" \
     --catalog-image="${REDHAT_MARKETPLACE_DISCONNECTED_IMAGE}" \
-    --registry-auth="../../output/openshift-install/${ENVIRONMENT}/pull-secret.json" \
+    --registry-auth="../../output/openshift-install/${OCP_ENVIRONMENT}/pull-secret.json" \
     --arch="linux/amd64"
 ----
 
 Download the catalog database.
 
-[source,bash]
+[source,shell]
 ----
-source environment/${ENVIRONMENT}.env
+source environment/${OCP_ENVIRONMENT}.env
 
 # Red Hat operators
 ./mirror-olm.sh download-db \
     --catalog-name="redhat-operators" \
     --catalog-image="${REDHAT_OPERATORS_DISCONNECTED_IMAGE}" \
     --catalog-repository="${REDHAT_OPERATORS_DISCONNECTED_REPO}" \
-    --registry-auth="../../output/openshift-install/${ENVIRONMENT}/pull-secret.json"
+    --registry-auth="../../output/openshift-install/${OCP_ENVIRONMENT}/pull-secret.json"
 
 # Certified operators
 ./mirror-olm.sh download-db \
     --catalog-name="certified-operators" \
     --catalog-image="${CERTIFIED_OPERATORS_DISCONNECTED_IMAGE}" \
     --catalog-repository="${CERTIFIED_OPERATORS_DISCONNECTED_REPO}" \
-    --registry-auth="../../output/openshift-install/${ENVIRONMENT}/pull-secret.json"
+    --registry-auth="../../output/openshift-install/${OCP_ENVIRONMENT}/pull-secret.json"
 
 # Community operators
 ./mirror-olm.sh download-db \
     --catalog-name="community-operators" \
     --catalog-image="${COMMUNITY_OPERATORS_DISCONNECTED_IMAGE}" \
     --catalog-repository="${COMMUNITY_OPERATORS_DISCONNECTED_REPO}" \
-    --registry-auth="../../output/openshift-install/${ENVIRONMENT}/pull-secret.json"
+    --registry-auth="../../output/openshift-install/${OCP_ENVIRONMENT}/pull-secret.json"
 ----
 
 Create the `+CatalogSource+` object.
 
-[source,bash]
+[source,shell]
 ----
-oc apply -f catalog-source/${ENVIRONMENT}/redhat-operators-disconnected.yml
-oc apply -f catalog-source/${ENVIRONMENT}/certified-operators-disconnected.yml
-oc apply -f catalog-source/${ENVIRONMENT}/community-operators-disconnected.yml
-oc apply -f catalog-source/${ENVIRONMENT}/redhat-marketplace-disconnected.yml
+oc apply -f catalog-source/${OCP_ENVIRONMENT}/redhat-operators-disconnected.yml
+oc apply -f catalog-source/${OCP_ENVIRONMENT}/certified-operators-disconnected.yml
+oc apply -f catalog-source/${OCP_ENVIRONMENT}/community-operators-disconnected.yml
+oc apply -f catalog-source/${OCP_ENVIRONMENT}/redhat-marketplace-disconnected.yml
 ----
 
 Create the `+ImageContentSourcePolicy+` object.
 
-[source,bash]
+[source,shell]
 ----
 oc apply -f catalogs/redhat-operators/imageContentSourcePolicy.yaml
 oc apply -f catalogs/certified-operators/imageContentSourcePolicy.yaml
@@ -102,68 +106,76 @@ oc apply -f catalogs/community-operators/imageContentSourcePolicy.yaml
 
 == Mirror operator images
 
-For example, mirror images for the `+ocs-operator+` in the `+redhat-operators+` catalog.
+Find the operator to install in the database.
 
-[source,bash]
+[source,shell]
+----
+less catalogs/redhat-operators/index.txt
+----
+
+For example, select the `+quay-operator+` from `+redhat-operators+` catalog to 
+mirror its images.
+
+[source,shell]
 ----
 ./mirror-olm.sh mirror-operator \
     --catalog-path="catalogs/redhat-operators" \
-    --operator-name="jaeger-operator.v1.20.2" \
-    --registry-auth="../../output/openshift-install/${ENVIRONMENT}/pull-secret.json"
+    --operator-name="quay-operator.v3.4.3" \
+    --registry-auth="../../output/openshift-install/${OCP_ENVIRONMENT}/pull-secret.json"
 ----
 
-Find the name of the PackageManifest for the operator you want to install.
+[NOTE]
+====
+Regular expressions are supported. For example, to mirror all the operator
+releases use the keyword `quay-operator` without the versions.
+====
 
-[source,bash]
-----
-oc get packagemanifest
-----
+The list of images that have been mirror is writen to a file.
 
-Get available CSV for the operator PackageManifest.
-
-[source,bash]
+[source,shell]
 ----
-export operator_pkg="example-operator"
-oc get packagemanifest ${operator_pkg} -o jsonpath='{.status.channels[*].currentCSV}{"\n"}' | tr " " "\n"
-----
-
-Get the list of images to mirror for this operator.
-
-[source,bash]
-----
-export operator_csv="example-operator"
-oc get packagemanifest ${operator_pkg} -o jsonpath='{.status.channels[?(@.currentCSV=="'${operator_csv}'")].currentCSVDesc.relatedImages[*]}{"\n"}' | tr " " "\n"
+$ tree catalogs/redhat-operators/operators/${OPERATOR_NAME}
+catalogs/redhat-operators/operators/${OPERATOR_NAME}
+└── images.txt
 ----
 
 == Troubleshooting
 
 Forward catalog service port to query information from localhost.
 
-[source,bash]
+[source,shell]
 ----
-oc port-forward service/redhat-operators-disconnected 50051:50051
+oc port-forward -n openshift-marketplace \
+    service/redhat-operators-disconnected 50051:50051
 ----
 
 List all the operators in the catalog.
 
-[source,bash]
+[source,shell]
 ----
 grpcurl -plaintext localhost:50051 api.Registry/ListPackages
 ----
 
 Get information for an operator in a catalog.
 
-[source,bash]
+[source,shell]
 ----
-grpcurl -plaintext -d '{"name":"${OPERATOR_NAME}"}' \
+grpcurl -plaintext \
+    -d '{
+        "name":"'${OPERATOR_NAME}'"
+    }' \
     localhost:50051 api.Registry/GetPackage
 ----
 
 Get information for an specific channel.
 
-[source,bash]
+[source,shell]
 ----
-grpcurl -plaintext -d '{"pkgName":"${OPERATOR_NAME}", "channelName":"${OPERATOR_CHANNEL}"}' \
+grpcurl -plaintext \
+    -d '{
+        "pkgName":"'${OPERATOR_NAME}'",
+        "channelName":"'${OPERATOR_CHANNEL}'"
+    }' \
     localhost:50051 api.Registry/GetBundleForChannel
 ----
 

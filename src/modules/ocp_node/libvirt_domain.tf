@@ -52,5 +52,10 @@ resource "libvirt_domain" "ocp_node" {
       network_interface.0.addresses
     ]
   }
+  
+  provisioner "local-exec" {
+    when    = destroy
+    command = format("ssh-keygen -R %s", self.network_interface.0.hostname)
+  }
 
 }

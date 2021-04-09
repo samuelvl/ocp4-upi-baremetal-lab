@@ -1,10 +1,10 @@
 # Terraform parameters
-ENVIRONMENT       := localhost
+ENVIRONMENT       := lab
 TERRAFORM         := terraform
 TF_FILES_PATH     := src
 TF_BACKEND_CONF   := configuration/backend
 TF_VARIABLES      := configuration/tfvars
-LIBVIRT_IMGS_PATH := src/storage/images
+LIBVIRT_IMGS_PATH := images
 OCP_VERSION       := 4.6.8
 OCP_RELEASE       := $(shell echo $(OCP_VERSION) | head -c 3)
 OCP_INSTALLER     := openshift-install
@@ -89,6 +89,10 @@ clean-installer:
 	$(info Deleting Openshift installation files...)
 	$(RM) openshift-install
 
+clean-olm:
+	$(info Deleting OLM catalog files...)
+	$(RM) -r day-two/02-olm/catalogs
+
 clean-dns:
 	$(info Elevating privileges...)
 	@sudo -v
@@ -113,4 +117,4 @@ clean-infra:
 	$(RM) -r output/mirror/$(ENVIRONMENT)
 	$(RM) -r state/terraform.$(ENVIRONMENT).tfstate
 
-clean: changes clean-installer clean-dns clean-infra
+clean: changes clean-installer clean-olm clean-dns clean-infra

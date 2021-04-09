@@ -1,10 +1,13 @@
 = Ingress Operator
 
-Ingress Operator is an OpenShift component which enables external access to cluster services by configuring Ingress Controllers, which route traffic as specified by OpenShift Route and Kubernetes Ingress resources.
+Ingress Operator is an OpenShift component which enables external access to
+cluster services by configuring Ingress Controllers, which route traffic as
+specified by OpenShift Route and Kubernetes Ingress resources.
 
 == Configuration
 
-Modify the `+IngressController+` object to increase the number of replicas, allocate in infrastructure nodes or tune the configuration.
+Modify the `+IngressController+` object to increase the number of replicas,
+allocate in infrastructure nodes or tune the configuration.
 
 [source,yaml]
 ----
@@ -13,105 +16,18 @@ include::ingress-controller/default.yml[]
 
 Create the object using the `+oc apply+` command on this file.
 
-[source,bash]
+[source,shell]
 ----
 oc apply -f ingress-controller/default.yml
 ----
 
 Wait until the new router is succesfully rolled out.
 
-[source,bash]
+[source,shell]
 ----
 $ oc get deploy router-default -n openshift-ingress
 NAME             READY   UP-TO-DATE   AVAILABLE   AGE
 router-default   3/3     3            3           98m
-----
-
-== Testing
-
-[source,bash]
-----
-# NodePort
-export INGRESS_POD_NAME="router-stress-nodeport-69b5fcfbcd-b6b58"
-
-## HTTP
-export VEGETA_QUERY="GET http://app-nodeport-example-app-testing.apps.ocp.bmlab.int:30925?max=100&min=99"
-
-echo ${VEGETA_QUERY} | vegeta attack -rate=10000/1s -duration=60s -connections=1000 \
-    -keepalive=false -output=ocp-haproxy-nodeport-http-10kqps.bin
-
-oc sniff -p ${INGRESS_POD_NAME} -n openshift-ingress -i eth0 \
-    -f "tcp[tcpflags] & (tcp-syn|tcp-ack) != 0" -o ocp-haproxy-nodeport-http-10kqps.pcap
-
-oc exec -it ${INGRESS_POD_NAME} -- watch -n1 -t \
-    '(date "+TIME:%H:%M:%S"; ss -4ten --no-header | wc -l) | tee -a /tmp/ocp-haproxy-nodeport-http-10kqps-conns.log'
-
-watch -n1 -t \
-    '(date "+TIME:%H:%M:%S"; netstat -s | grep drop) | tee -a /tmp/ocp-haproxy-nodeport-http-10kqps-drops.log'
-
-oc cp openshift-ingress/${INGRESS_POD_NAME}:/tmp/ocp-haproxy-nodeport-http-10kqps-conns.log \
-    ./ocp-haproxy-nodeport-http-10kqps-conns.log
-
-scp core@worker02.ocp.bmlab.int:/tmp/ocp-haproxy-nodeport-http-10kqps-drops.log .
-
-vegeta report ocp-haproxy-nodeport-http-10kqps.bin
-
-## HTTPS
-export VEGETA_QUERY="GET https://app-nodeport-secure-example-app-testing.apps.ocp.bmlab.int:31625?max=100&min=99"
-
-# HostPort
-export INGRESS_POD_NAME="router-stress-hostport-56c679b46-jtxh4"
-
-## HTTP
-export VEGETA_QUERY="GET http://app-hostport-example-app-testing.apps.ocp.bmlab.int?max=100&min=99"
-
-echo ${VEGETA_QUERY} | vegeta attack -rate=10000/1s -duration=60s -connections=1000 \
-    -keepalive=false -output=ocp-haproxy-hostport-http-10kqps.bin
-
-tcpdump -i ens3 "(host 10.0.0.1) and (tcp[tcpflags] & (tcp-syn|tcp-ack) != 0)" \
-    -w /host/tmp/ocp-haproxy-hostport-http-10kqps.pcap
-
-oc exec -it ${INGRESS_POD_NAME} -- watch -n1 -t \
-    '(date "+TIME:%H:%M:%S"; ss -4ten --no-header | wc -l) | tee -a /tmp/ocp-haproxy-hostport-http-10kqps-conns.log'
-
-watch -n1 -t \
-    '(date "+TIME:%H:%M:%S"; netstat -s | grep drop) | tee -a /tmp/ocp-haproxy-hostport-http-10kqps-drops.log'
-
-oc cp openshift-ingress/${INGRESS_POD_NAME}:/tmp/ocp-haproxy-hostport-http-10kqps-conns.log \
-    ./ocp-haproxy-hostport-http-10kqps-conns.log
-
-scp core@worker02.ocp.bmlab.int:/tmp/ocp-haproxy-hostport-http-10kqps.pcap .
-scp core@worker02.ocp.bmlab.int:/tmp/ocp-haproxy-hostport-http-10kqps-drops.log .
-
-vegeta report ocp-haproxy-hostport-http-10kqps.bin
-
-## HTTPS
-export VEGETA_QUERY="GET https://app-hostport-secure-example-app-testing.apps.ocp.bmlab.int?max=100&min=99"
-
-----
-
-[source,bash]
-----
-tcpdump -i veth5d0a2ee8 host 10.0.0.1 -w /host/home/core/ocp-haproxy-1kqps.pcap
-
-netstat -anptl | grep 4444
-tcp        0      0 0.0.0.0:4444            0.0.0.0:*               LISTEN      795101/nc
-tcp6       0      0 :::4444                 :::*                    LISTEN      795101/nc
-
---->
-
-tcp        0      0 10.0.0.103:4444         10.0.0.1:42750          ESTABLISHED 795101/nc
-
-netstat -anptl | grep 30925
-tcp6       0      0 :::30925                :::*                    LISTEN      2689/openshift-sdn-
-
-watch -n 0.1 'ss -tlnpa|grep -E ":30925"|wc -l'
-watch -n 0.1 'cat /proc/net/nf_conntrack|grep dport=30925|wc -l'
-
-sysctl -w net.ipv4.tcp_abort_on_overflow=1
-
-oc exec -it prometheus-k8s-0 -c prometheus -- curl http://localhost:9090/federate -G \
-    --data-urlencode 'match[]={__name__=~"kube_node_info"}'
 ----
 
 == References

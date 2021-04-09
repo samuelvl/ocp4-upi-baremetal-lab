@@ -4,7 +4,7 @@ metadata:
   name: cluster
 spec:
   logging: 2
-  managementState: Removed
+  managementState: Managed
   proxy: {}
   replicas: 1
   requests:
@@ -13,4 +13,6 @@ spec:
     write:
       maxWaitInQueue: 0s
   rolloutStrategy: RollingUpdate
-  storage: {}
+  storage:
+    emptyDir: {}
+    managementState: Managed

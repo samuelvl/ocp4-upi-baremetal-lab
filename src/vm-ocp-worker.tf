@@ -11,20 +11,18 @@ locals {
 }
 
 resource "libvirt_volume" "ocp_worker_lso" {
-
-  count = var.ocp_cluster.num_workers
-
-  name           = format("%s-lso-volume.qcow2", element(local.ocp_worker, count.index).hostname)
-  pool           = libvirt_pool.openshift.name
-  size           = 100 * 1073741824 # Bytes
-  format         = "qcow2"
+  count  = var.ocp_cluster.num_workers
+  name   = format("%s-lso-volume.qcow2",
+    element(local.ocp_worker, count.index).hostname
+  )
+  pool   = libvirt_pool.openshift.name
+  size   = 100 * 1073741824 # Bytes
+  format = "qcow2"
 }
 
 module "ocp_worker" {
-
-  source = "./modules/ocp_node"
-  count  = var.ocp_cluster.num_workers
-
+  source       = "./modules/ocp_node"
+  count        = var.ocp_cluster.num_workers
   id           = format("ocp-%s", local.ocp_worker[count.index].hostname)
   fqdn         = local.ocp_worker[count.index].fqdn
   ignition     = data.local_file.ocp_ignition_worker.content

@@ -2,14 +2,14 @@
 
 Add users to groups.
 
-[source,bash]
+[source,shell]
 ----
 oc apply -f groups.yml
 ----
 
 Configure RBAC.
 
-[source,bash]
+[source,shell]
 ----
 oc apply -f cluster-role-bindings.yml
 ----
@@ -18,7 +18,7 @@ oc apply -f cluster-role-bindings.yml
 
 You can prevent an authenticated user group from self-provisioning new projects.
 
-[source,bash]
+[source,shell]
 ----
 oc patch clusterrolebinding.rbac self-provisioners -p '{"subjects": null}'
 ----

@@ -84,20 +84,29 @@ variable "helper_node" {
 variable "load_balancer" {
   description = "Configuration for load balancer virtual machine"
   type = object({
-    type    = string,
-    version = string
+    type  = string,
+    image = string
   })
 }
 
-# Registry specification
+# Quay specification
 variable "registry" {
-  description = "Configuration for registry virtual machine"
+  description = "Configuration for quay virtual machine"
   type = object({
-    version    = string,
-    username   = string,
-    password   = string,
-    repository = string,
-    port       = number
+    image       = string,
+    user        = string,
+    password    = string,
+    repository  = string,
+    port        = number,
+    port_tls    = number,
+    db_image    = string,
+    db_name     = string,
+    db_user     = string,
+    db_pass     = string,
+    db_port     = number,
+    redis_image = string,
+    redis_pass  = string,
+    redis_port  = number
   })
 }
 
@@ -105,7 +114,7 @@ variable "registry" {
 variable "nfs" {
   description = "Configuration for NFS virtual machine"
   type = object({
-    version    = string
+    image = string
   })
 }
 

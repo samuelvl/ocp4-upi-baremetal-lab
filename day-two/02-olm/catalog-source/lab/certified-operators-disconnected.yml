@@ -1,11 +1,11 @@
 apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
-  name: redhat-operators-disconnected
+  name: certified-operators-disconnected
   namespace: openshift-marketplace
 spec:
-  displayName: Red Hat Operators (Disconnected)
-  image: registry.ocp.bmlab.int:5000/olm/redhat-operator-index:v4.6-v1
+  displayName: Certified Operators (Disconnected)
+  image: registry.ocp.bmlab.int:5443/openshift4/olm-certified-operator-index:v4.6-v1
   sourceType: grpc
   publisher: Disconnected
 updateStrategy:

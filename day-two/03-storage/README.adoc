@@ -1,6 +1,9 @@
 = Storage
 
-OpenShift uses the Kubernetes persistent volume (PV) framework to allow cluster administrators to provision persistent storage for a cluster. Developers can use persistent volume claims (PVCs) to request PV resources without having specific knowledge of the underlying storage infrastructure.
+OpenShift uses the Kubernetes persistent volume (PV) framework to allow cluster
+administrators to provision persistent storage for a cluster. Developers can use
+persistent volume claims (PVCs) to request PV resources without having specific
+knowledge of the underlying storage infrastructure.
 
 == NFS
 
@@ -13,7 +16,7 @@ include::nfs/etcd-backup-pv.yml[]
 
 Create the object using the `+oc apply+` command on this file.
 
-[source,bash]
+[source,shell]
 ----
 oc apply -f nfs/etcd-backup-pv.yml
 ----
@@ -22,16 +25,17 @@ oc apply -f nfs/etcd-backup-pv.yml
 
 Install `+Local Storage Operator+` from Openshift marketplace.
 
-[source,bash]
+[source,shell]
 ----
 oc apply -f lso/
 oc patch installplan ${installplan_name} \
   --type=merge -n openshift-lso -p='{"spec": {"approved": true}}'
 ----
 
-Add a disk to each node and label these nodes to schedule the persistent volumes created by the `+LSO+` on them.
+Add a disk to each node and label these nodes to schedule the persistent volumes
+created by the `+LSO+` on them.
 
-[source,bash]
+[source,shell]
 ----
 oc label node worker00 local.storage.openshift.io/lso=generic-scsi-fs
 oc label node worker01 local.storage.openshift.io/lso=prometheus-scsi-fs
@@ -40,7 +44,7 @@ oc label node worker02 local.storage.openshift.io/lso=prometheus-scsi-fs
 
 Get the device ID for the new disk in each node.
 
-[source,bash]
+[source,shell]
 ----
 $ ls -al /dev/disk/by-id/
 lrwxrwxrwx. 1 root root   9 Oct 29 11:45 scsi-0QEMU_QEMU_HARDDISK_drive-scsi0-0-0-1 -> ../../sdb
@@ -55,7 +59,7 @@ include::lso/local-volumes/generic-scsi-fs.yml[]
 
 Create the object using the `+oc apply+` command on this file.
 
-[source,bash]
+[source,shell]
 ----
 oc apply -f lso/local-volumes
 ----

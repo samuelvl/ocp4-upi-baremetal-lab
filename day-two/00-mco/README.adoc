@@ -1,10 +1,13 @@
 = Machine Config Operator (MCO)
 
-OpenShift 4 is an operator-focused platform, and the Machine Config operator extends that to the operating system itself, managing updates and configuration changes to essentially everything between the kernel and kubelet.
+OpenShift 4 is an operator-focused platform, and the Machine Config operator
+extends that to the operating system itself, managing updates and configuration
+changes to essentially everything between the kernel and kubelet.
 
 == Machine Config Pool
 
-When you create a new node role (e.g. infrastructure), a `+MachineConfigPool+` object must be created to handle changes and upgrades for this kind of nodes.
+When you create a new node role (e.g. infrastructure), a `+MachineConfigPool+`
+object must be created to handle changes and upgrades for this kind of nodes.
 
 [source,yaml]
 ----
@@ -13,14 +16,15 @@ include::mcp/infra.yml[]
 
 Create the object using the `+oc apply+` command on this file.
 
-[source,bash]
+[source,shell]
 ----
 oc apply -f mcp/infra.yml
 ----
 
-Then, add the corresponding `+node-role.kubernetes.io/${role}+` label to the nodes.
+Then, add the corresponding `+node-role.kubernetes.io/${role}+` label to the
+nodes.
 
-[source,bash]
+[source,shell]
 ----
 oc label node -l node-role.kubernetes.io/worker="" \
     node-role.kubernetes.io/infra=""
@@ -37,14 +41,14 @@ include::mc/50-worker-dummyfile.yml[]
 
 Create the object using the `+oc apply+` command on this file.
 
-[source,bash]
+[source,shell]
 ----
 oc apply -f mc/50-worker-dummyfile.yml
 ----
 
 Wait until the `+MachineConfigPool+` applies the change in every node.
 
-[source,bash]
+[source,shell]
 ----
 $ oc get mcp worker
 NAME     CONFIG                                             UPDATED   UPDATING   DEGRADED

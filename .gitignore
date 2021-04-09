@@ -44,8 +44,7 @@ override.tf.json
 *.out
 
 # Libvirt storage
-src/storage/images/*
-src/storage/volumes/*
+images/*
 
 # Debug files
 /openshift-install

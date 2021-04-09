@@ -42,6 +42,7 @@ function download_catalog_db {
             --to-manifests=${catalog_path} \
             --path="/:${catalog_image_fs}" \
             --registry-config=${registry_auth} \
+            --icsp-scope="registry" \
             --filter-by-os=".*" \
             --insecure=true
 
@@ -74,12 +75,19 @@ function mirror_operator_images {
             >> ${operator_path}/images.txt
     done
 
+    operator_bundle_image=(`sqlite3 ${catalog_path}/image/database/index.db \
+        "select bundlepath from operatorbundle where name like '${operator_name}%';"`)
+
+    echo ${operator_bundle_image}
+    grep ${operator_bundle_image} ${catalog_path}/mapping.txt \
+        >> ${operator_path}/images.txt
+
     # Mirror filtered operators
-    oc image mirror \
-        --filename=${operator_path}/images.txt \
-        --registry-config=${registry_auth} \
-        --filter-by-os=".*" \
-        --insecure=true
+    # oc image mirror \
+    #     --filename=${operator_path}/images.txt \
+    #     --registry-config=${registry_auth} \
+    #     --filter-by-os=".*" \
+    #     --insecure=true
 }
 
 # CLI command for mirror_catalog_image function

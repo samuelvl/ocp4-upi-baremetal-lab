@@ -7,7 +7,9 @@ locals {
 }
 
 resource "local_file" "ocp_install_mirror_release_image" {
-  filename             = format("%s/mirror-release-image.sh", local.ocp_installer.path)
+  filename             = format("%s/mirror-release-image.sh",
+    local.ocp_installer.path
+  )
   file_permission      = "0744"
   directory_permission = "0755"
   content              = <<-EOF
@@ -18,13 +20,15 @@ resource "local_file" "ocp_install_mirror_release_image" {
       --registry-config=${local_file.ocp_pull_secret.filename} \
       --from=quay.io/openshift-release-dev/ocp-release:${local.ocp_installer.version_arch} \
       --to=${local.registry.address}/${var.registry.repository} \
-      --to-release-image=${local.registry.address}/${var.registry.repository}/release:${local.ocp_installer.version_arch} \
       --insecure=true
   EOF
 }
 
 data "template_file" "ocp_install_config" {
-  template = file(format("%s/openshift-install/%s/install-config.yaml.tpl", path.module, local.ocp_installer.release))
+  template = file(format("%s/openshift-install/%s/install-config.yaml.tpl",
+    path.module,
+    local.ocp_installer.release
+  ))
 
   vars = {
     ocp_cluster_name    = var.ocp_cluster.name
@@ -33,7 +37,10 @@ data "template_file" "ocp_install_config" {
     ocp_pods_cidr       = var.ocp_cluster.pods_cidr
     ocp_pods_range      = var.ocp_cluster.pods_range
     ocp_svcs_cidr       = var.ocp_cluster.svcs_cidr
-    ocp_registry_mirror = format("%s/%s", local.registry.address, var.registry.repository)
+    ocp_registry_mirror = format("%s/%s",
+      local.registry.address,
+      var.registry.repository
+    )
     ocp_pull_secret     = local.ocp_pull_secret
     ocp_ssh_pubkey      = trimspace(tls_private_key.ssh_maintuser.public_key_openssh)
     ocp_additional_ca   = indent(2, tls_self_signed_cert.ocp_root_ca.cert_pem)
@@ -41,7 +48,9 @@ data "template_file" "ocp_install_config" {
 }
 
 resource "local_file" "ocp_install_config" {
-  filename             = format("%s/install-config.yaml", local.ocp_installer.path)
+  filename             = format("%s/install-config.yaml",
+    local.ocp_installer.path
+  )
   content              = data.template_file.ocp_install_config.rendered
   file_permission      = "0600"
   directory_permission = "0700"
@@ -57,7 +66,9 @@ resource "local_file" "ocp_install_config" {
 }
 
 resource "local_file" "ocp_install_config_backup" {
-  filename             = format("%s/install-config.yaml.backup", local.ocp_installer.path)
+  filename             = format("%s/install-config.yaml.backup",
+    local.ocp_installer.path
+  )
   content              = data.template_file.ocp_install_config.rendered
   file_permission      = "0600"
   directory_permission = "0700"

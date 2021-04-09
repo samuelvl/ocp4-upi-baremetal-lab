@@ -12,7 +12,9 @@ data "template_file" "openshift_dnsmasq" {
 
 resource "local_file" "nm_enable_dnsmasq" {
   filename             = "/etc/NetworkManager/conf.d/nm_enable_dnsmasq.conf"
-  content              = file(format("%s/dns/nm_enable_dnsmasq.conf", path.module))
+  content              = file(format("%s/dns/nm_enable_dnsmasq.conf",
+    path.module
+  ))
   file_permission      = "0666"
   directory_permission = "0755"
 }

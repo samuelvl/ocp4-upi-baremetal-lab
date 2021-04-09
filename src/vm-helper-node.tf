@@ -9,7 +9,7 @@ locals {
   registry = {
     hostname = "registry"
     fqdn     = format("registry.%s", var.dns.domain)
-    address  = format("registry.%s:%s", var.dns.domain, var.registry.port)
+    address  = format("registry.%s:%s", var.dns.domain, var.registry.port_tls)
     ip       = lookup(var.ocp_inventory, "helper").ip
     mac      = lookup(var.ocp_inventory, "helper").mac
   }
@@ -27,12 +27,6 @@ resource "libvirt_ignition" "helper_node" {
   name    = format("%s.ign", local.helper_node.hostname)
   pool    = libvirt_pool.openshift.name
   content = data.ct_config.helper_node_ignition.rendered
-
-  lifecycle {
-    ignore_changes = [
-      content
-    ]
-  }
 }
 
 resource "libvirt_volume" "helper_node_image" {
@@ -48,6 +42,9 @@ resource "libvirt_volume" "helper_node" {
   base_volume_id = libvirt_volume.helper_node_image.id
   format         = "qcow2"
   size           = var.helper_node.size * pow(10, 9) # Bytes
+  depends_on     = [
+    libvirt_ignition.helper_node
+  ]
 }
 
 resource "libvirt_domain" "helper_node" {
