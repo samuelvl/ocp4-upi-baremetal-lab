@@ -8,7 +8,7 @@ The cluster is deployed on top of **libvirt/kvm** using **Terraform** and every
 step of the installation and configuration is automated to be able to destroy and
 deploy a new cluster in less than 30 minutes.
 
-Red Hat **Quay** has been the chosen registry to store the cluster images.
+Red Hat **Quay** has been chosen as the registry to store the cluster images.
 
 == Requirements
 
