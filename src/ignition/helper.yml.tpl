@@ -54,6 +54,12 @@ storage:
         name: nfsnobody
       group:
         name: nfsnobody
+    - path: /var/lib/nfs/data/etcd-backup
+      mode: 0755
+      user:
+        name: nfsnobody
+      group:
+        name: nfsnobody
     - path: /etc/quay
       mode: 0755
       user:

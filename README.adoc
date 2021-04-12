@@ -159,6 +159,31 @@ virsh shutdown ocp-bootstrap
 Once Openshift 4 has been deployed in can be configured with the instructions in
 `+day-two+` folder resources.
 
+== Upgrade cluster
+
+Mirror the images for the new version to the external registry:
+
+[source,shell]
+----
+./output/openshift-install/${OCP_ENVIRONMENT}/mirror-release-image.sh \
+    "4.y.z" --apply-release-image-signature
+----
+
+Start the cluster upgrade to the desired version:
+
+[source,shell]
+----
+./output/openshift-install/${OCP_ENVIRONMENT}/update-cluster.sh "4.y.z"
+----
+
+Wait until the installation is completed:
+
+[source,shell]
+----
+$ oc adm upgrade
+Cluster version is 4.y.z
+----
+
 == References
 
 - https://github.com/openshift/openshift-docs

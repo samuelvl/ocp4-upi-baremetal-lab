@@ -31,17 +31,24 @@ spec:
                   value: /home/core/assets/backup
                 - name: ETCD_BACKUP_PV_PATH
                   value: /var/lib/etcd-backup
-              command: [ "/bin/bash", "-c" ]
-              args:
-                - >-
-                  `# Make etcd backup`
-                  chroot ${HOST_PATH} ${ETCD_BACKUP_SCRIPT} ${ETCD_BACKUP_MASTER_PATH} &&
+              command:
+                - /bin/bash
+                - -c
+                - |
+                  #/bin/bash
+                  ## Make etcd backup
+                  chroot ${HOST_PATH} \
+                      ${ETCD_BACKUP_SCRIPT} ${ETCD_BACKUP_MASTER_PATH}
 
-                  `# Copy backup files (etcd and static pods) to PV folder`
-                  rsync -rtv ${HOST_PATH}/${ETCD_BACKUP_MASTER_PATH}/* ${ETCD_BACKUP_PV_PATH}/ &&
+                  ## Copy backup files (etcd and static pods) to PV folder
+                  rsync -rtv \
+                      ${HOST_PATH}/${ETCD_BACKUP_MASTER_PATH}/* \
+                      ${ETCD_BACKUP_PV_PATH}/
 
-                  `# Prune backup files`
-                  rm -f ${HOST_PATH}/${ETCD_BACKUP_MASTER_PATH}/*.db ${HOST_PATH}/${ETCD_BACKUP_MASTER_PATH}/*.tar.gz
+                  ## Prune backup files
+                  rm -f \
+                      ${HOST_PATH}/${ETCD_BACKUP_MASTER_PATH}/*.db \
+                      ${HOST_PATH}/${ETCD_BACKUP_MASTER_PATH}/*.tar.gz
               securityContext:
                 runAsUser: 0
                 privileged: true

@@ -1,6 +1,8 @@
 locals {
   ocp_installer = {
+    version      = var.OCP_VERSION
     release      = join(".", slice(split(".", var.OCP_VERSION), 0, 2)) # e.g. 4.1.0 -> 4.1
+    arch         = "x86_64"
     version_arch = format("%s-x86_64", var.OCP_VERSION)
     path         = format("output/openshift-install/%s", var.OCP_ENVIRONMENT)
   }
@@ -15,12 +17,35 @@ resource "local_file" "ocp_install_mirror_release_image" {
   content              = <<-EOF
     #!/usr/bin/env bash
 
-    # Mirror release images
+    OCP_VERSION=$${1:-${local.ocp_installer.version}}
+    OCP_ARCH="${local.ocp_installer.arch}"
+    ADDITIONAL_FLAGS=$${2}
+
     oc adm release mirror \
-      --registry-config=${local_file.ocp_pull_secret.filename} \
-      --from=quay.io/openshift-release-dev/ocp-release:${local.ocp_installer.version_arch} \
-      --to=${local.registry.address}/${var.registry.repository} \
-      --insecure=true
+        --from=quay.io/openshift-release-dev/ocp-release:$${OCP_VERSION}-$${OCP_ARCH} \
+        --to=registry.ocp.bmlab.int:5443/openshift4/images \
+        --registry-config=output/openshift-install/lab/pull-secret.json \
+        --insecure=true $${ADDITIONAL_FLAGS}
+  EOF
+}
+
+resource "local_file" "ocp_install_update_cluster" {
+  filename             = format("%s/update-cluster.sh",
+    local.ocp_installer.path
+  )
+  file_permission      = "0744"
+  directory_permission = "0755"
+  content              = <<-EOF
+    #!/usr/bin/env bash
+    OCP_VERSION=$${1}
+
+    podman pull registry.ocp.bmlab.int:5443/openshift4/images:$${OCP_VERSION}
+    SHA256=$(podman inspect \
+        registry.ocp.bmlab.int:5443/openshift4/images:$${OCP_VERSION} -f '{{.Digest}}')
+
+    oc adm upgrade \
+        --allow-explicit-upgrade \
+        --to-image registry.ocp.bmlab.int:5443/openshift4/images@$${SHA256}
   EOF
 }
 

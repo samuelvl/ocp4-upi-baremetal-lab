@@ -75,23 +75,14 @@ $ oc create job --from=cronjob/etcd-backup ${JOB_NAME} --dry-run -o yaml |\
 $ oc create job --from=cronjob/etcd-backup ${JOB_NAME}
 
 $ oc logs -l job-name=${JOB_NAME} -n etcd-backup
-0a4704d82b8682c34f09b05032641942cfcc51519be4318d53b4658181de5fb4
-etcdctl version: 3.3.22
-API version: 3.3
-found latest kube-apiserver-pod: /etc/kubernetes/static-pod-resources/kube-apiserver-pod-8
-found latest kube-controller-manager-pod: /etc/kubernetes/static-pod-resources/kube-controller-manager-pod-8
-found latest kube-scheduler-pod: /etc/kubernetes/static-pod-resources/kube-scheduler-pod-9
-found latest etcd-pod: /etc/kubernetes/static-pod-resources/etcd-pod-2
-2020-09-24 14:11:49.091032 I | clientv3: opened snapshot stream; downloading
-2020-09-24 14:11:50.824565 I | clientv3: completed snapshot read; closing
-Snapshot saved at /home/core/assets/backup/snapshot_2020-09-24_141148.db
+Snapshot saved at /home/core/assets/backup/snapshot_2021-04-12_085856.db
 snapshot db and kube resources are successfully saved to /home/core/assets/backup
 sending incremental file list
-snapshot_2020-09-24_141148.db
-static_kuberesources_2020-09-24_141148.tar.gz
+snapshot_2021-04-12_085856.db
+static_kuberesources_2021-04-12_085856.tar.gz
 
-sent 125,528,531 bytes  received 54 bytes  83,685,723.33 bytes/sec
-total size is 125,497,687  speedup is 1.00
+sent 75,455,341 bytes  received 54 bytes  50,303,596.67 bytes/sec
+total size is 75,436,712  speedup is 1.00
 ----
 
 Verify that the backup has been correctly created in the storage backend.
