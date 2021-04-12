@@ -24,7 +24,7 @@ resource "local_file" "ocp_install_mirror_release_image" {
     oc adm release mirror \
         --from=quay.io/openshift-release-dev/ocp-release:$${OCP_VERSION}-$${OCP_ARCH} \
         --to=registry.ocp.bmlab.int:5443/openshift4/images \
-        --registry-config=output/openshift-install/lab/pull-secret.json \
+        --registry-config=${local_file.ocp_pull_secret.filename} \
         --insecure=true $${ADDITIONAL_FLAGS}
   EOF
 }
@@ -39,7 +39,8 @@ resource "local_file" "ocp_install_update_cluster" {
     #!/usr/bin/env bash
     OCP_VERSION=$${1}
 
-    podman pull registry.ocp.bmlab.int:5443/openshift4/images:$${OCP_VERSION}
+    podman pull registry.ocp.bmlab.int:5443/openshift4/images:$${OCP_VERSION} \
+        --authfile=${local_file.ocp_pull_secret.filename}
     SHA256=$(podman inspect \
         registry.ocp.bmlab.int:5443/openshift4/images:$${OCP_VERSION} -f '{{.Digest}}')
 
