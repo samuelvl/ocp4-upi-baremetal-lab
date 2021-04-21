@@ -12,12 +12,13 @@ spec:
   failedJobsHistoryLimit: 1
   jobTemplate:
     spec:
-      backoffLimit: 2
+      backoffLimit: 0
       template:
         spec:
           serviceAccountName: etcd-backup
           restartPolicy: Never
           dnsPolicy: ClusterFirst
+          hostNetwork: true
           containers:
             - name: etcd-backup
               image: registry.redhat.io/openshift4/ose-deployer:latest
