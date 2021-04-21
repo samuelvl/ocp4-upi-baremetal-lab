@@ -1,0 +1,12 @@
+# A simple HTTP Request & Response Service 
+
+Deploy `httpbin.org` application in Openshift to debug HTTP traffic.
+
+[source,shell]
+----
+oc apply -f app -n example-app
+----
+
+## References
+
+- https://github.com/postmanlabs/httpbin

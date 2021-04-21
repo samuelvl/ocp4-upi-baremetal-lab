@@ -10,6 +10,11 @@ deploy a new cluster in less than 30 minutes.
 
 Red Hat **Quay** has been chosen as the registry to store the cluster images.
 
+[WARNING]
+====
+This is a demo environment and it should never be used in production.
+====
+
 == Requirements
 
 The `+requirements.sh+` script will install all needed requirements:
@@ -96,17 +101,24 @@ Wait until bootstrap is ready to power on master nodes:
 for i in $(seq 0 2); do virsh start "ocp-master0$i"; done
 ----
 
-=== Worker nodes
-
-Wait until master nodes are up and running: 
+Wait until the master nodes are up and running: 
 
 [source,shell]
 ----
 ./openshift-install wait-for bootstrap-complete \
-	--dir output/openshift-install/${OCP_ENVIRONMENT}
+    --dir output/openshift-install/${OCP_ENVIRONMENT}
 ----
 
-Then, power on worker nodes:
+Finally, shutdown the bootstrap node:
+
+[source,shell]
+----
+virsh shutdown ocp-bootstrap
+----
+
+=== Worker nodes
+
+Power on worker nodes:
 
 [source,shell]
 ----
@@ -143,15 +155,6 @@ Verify the Openshift cluster is correctly created:
 [source,shell]
 ----
 oc get nodes
-----
-
-=== Destroy bootstrap node
-
-Finally, shutdown the bootstrap node:
-
-[source,shell]
-----
-virsh shutdown ocp-bootstrap
 ----
 
 == Day-2 operations

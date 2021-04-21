@@ -1,6 +1,5 @@
 helper_node = {
   id       = "helper"
-  base_img = "images/fedora-coreos-32.20200629.3.0.x86_64.qcow2"
   vcpu     = 4
   memory   = 8192
   size     = 200 # Gigabytes
@@ -12,20 +11,26 @@ load_balancer = {
 }
 
 registry = {
-  image       = "registry.redhat.io/quay/quay-rhel8:v3.4.3"
-  user        = "openshift4"
-  password    = "changeme"
-  repository  = "openshift4/images"
-  port        = 5080
-  port_tls    = 5443
-  db_image    = "registry.redhat.io/rhel8/postgresql-10:1-123"
-  db_name     = "quay"
-  db_user     = "quayuser"
-  db_pass     = "changeme"
-  db_port     = 5432
-  redis_image = "registry.redhat.io/rhel8/redis-5:1-110"
-  redis_pass  = "changeme"
-  redis_port  = 6379
+  image           = "registry.redhat.io/quay/quay-rhel8:v3.5.0 "
+  user            = "openshift4"
+  password        = "changeme"
+  repository      = "openshift4/images"
+  port            = 5080
+  port_tls        = 5443
+  s3_image        = "docker.io/minio/minio:RELEASE.2021-04-18T19-26-29Z"
+  s3_client_image = "docker.io/minio/mc:RELEASE.2021-03-23T05-46-11Z"
+  s3_port         = 9000
+  s3_bucket       = "quay"
+  s3_user         = "AKIAIOSFODNN7EXAMPLE"
+  s3_pass         = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+  db_image        = "registry.redhat.io/rhel8/postgresql-10:1-123"
+  db_name         = "quay"
+  db_user         = "quayuser"
+  db_pass         = "changeme"
+  db_port         = 5432
+  redis_image     = "registry.redhat.io/rhel8/redis-5:1-110"
+  redis_pass      = "changeme"
+  redis_port      = 6379
 }
 
 nfs = {
@@ -34,7 +39,6 @@ nfs = {
 
 ocp_bootstrap = {
   id       = "bootstrap"
-  base_img = "images/rhcos-4.6.8-x86_64-qemu.x86_64.qcow2"
   vcpu     = 4
   memory   = 8192
   size     = 60 # Gigabytes

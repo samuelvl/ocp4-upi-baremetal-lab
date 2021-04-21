@@ -11,6 +11,12 @@ variable "OCP_VERSION" {
   type        = string
 }
 
+# RHCOS version
+variable "RHCOS_VERSION" {
+  description = "Red Hat CoreOS version"
+  type        = string
+}
+
 # Openshift environment
 variable "OCP_ENVIRONMENT" {
   description = "Openshift environment"
@@ -73,7 +79,6 @@ variable "helper_node" {
   description = "Configuration for helper node virtual machine"
   type = object({
     id       = string,
-    base_img = string,
     vcpu     = number,
     memory   = number,
     size     = number
@@ -93,20 +98,26 @@ variable "load_balancer" {
 variable "registry" {
   description = "Configuration for quay virtual machine"
   type = object({
-    image       = string,
-    user        = string,
-    password    = string,
-    repository  = string,
-    port        = number,
-    port_tls    = number,
-    db_image    = string,
-    db_name     = string,
-    db_user     = string,
-    db_pass     = string,
-    db_port     = number,
-    redis_image = string,
-    redis_pass  = string,
-    redis_port  = number
+    image           = string,
+    user            = string,
+    password        = string,
+    repository      = string,
+    port            = number,
+    port_tls        = number,
+    s3_image        = string,
+    s3_client_image = string,
+    s3_port         = number,
+    s3_bucket       = string,
+    s3_user         = string,
+    s3_pass         = string,
+    db_image        = string,
+    db_name         = string,
+    db_user         = string,
+    db_pass         = string,
+    db_port         = number,
+    redis_image     = string,
+    redis_pass      = string,
+    redis_port      = number
   })
 }
 
@@ -123,7 +134,6 @@ variable "ocp_bootstrap" {
   description = "Configuration for Openshift bootstrap virtual machine"
   type = object({
     id       = string,
-    base_img = string,
     vcpu     = number,
     memory   = number,
     size     = number

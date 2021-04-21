@@ -1,13 +1,14 @@
+---
 apiVersion: machineconfiguration.openshift.io/v1
 kind: MachineConfig
 metadata:
-  name: 99-worker-kargs
+  name: 51-worker-kargs
   labels:
     machineconfiguration.openshift.io/role: worker
 spec:
   config:
     ignition:
-      version: 2.2.0
+      version: 3.2.0
   # https://www.freedesktop.org/software/systemd/man/kernel-command-line.html
   kernelArguments:
-    - modules_load=sd_mod,smartpqi
+    - psi=1

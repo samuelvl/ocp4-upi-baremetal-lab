@@ -2,11 +2,11 @@
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
-  name: local-storage-operator
-  namespace: openshift-lso
+  name: quay-operator
+  namespace: openshift-operators
 spec:
-  name: local-storage-operator
-  channel: "4.7"
-  installPlanApproval: Manual
+  name: quay-operator
+  channel: "quay-v3.5"
+  installPlanApproval: Automatic
   source: redhat-operators-disconnected
   sourceNamespace: openshift-marketplace

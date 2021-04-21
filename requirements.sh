@@ -9,7 +9,7 @@ TF_VERSION="0.14.10"
 TF_PROVIDERS_DIR="${HOME}/.terraform.d/plugins/registry.terraform.io/hashicorp"
 TF_PROVIDER_LIBVIRT_VERSION="0.6.3"
 TF_PROVIDER_LIBVIRT_RELEASE="v0.6.3/terraform-provider-libvirt-0.6.3+git.1604843676.67f4f2aa.Fedora_32.x86_64"
-OC_VERSION="4.6"
+OC_VERSION="4.7.6"
 
 # install_libvirt
 function install_libvirt {
@@ -103,7 +103,7 @@ function install_oc {
 
         # Download oc
         curl -L --output ${oc_binary}.tar.gz \
-            https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest-${OC_VERSION}/openshift-client-linux.tar.gz
+            https://mirror.openshift.com/pub/openshift-v4/clients/ocp/${oc_version}/openshift-client-linux.tar.gz
 
         # Install oc
         tar -xvf ${oc_binary}.tar.gz -C ${oc_install_dir} oc

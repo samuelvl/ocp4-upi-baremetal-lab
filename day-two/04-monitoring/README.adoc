@@ -21,6 +21,40 @@ Configure the stack by using the `+oc apply+` command on this file.
 oc apply -f cmo/cluster-monitoring-config.yml
 ----
 
+== Alertmanager
+
+Deploy an HTTP server to receive the alerts from Alertmanager.
+
+[source,shell]
+----
+oc apply -f alertmanager/webhook-receiver.yml -n openshift-monitoring
+----
+
+Configure Alertmanager to send alerts to this remote receiver.
+
+[source,yaml]
+----
+include::alertmanager/alertmanager.yaml[]
+----
+
+The Alertmanager configuration can be updated replacing the content of the
+alertmanager-main `+Secret+`.
+
+[source,shell]
+----
+oc create secret generic alertmanager-main \
+    --from-file=alertmanager.yaml=alertmanager/alertmanager.yaml \
+        --dry-run=client -o=yaml -n openshift-monitoring |\
+            oc replace secret --filename=- -n openshift-monitoring
+----
+
+Check if the alerts are being processed by the receiver.
+
+[source,shell]
+----
+oc logs -l component=webhook-receiver -n openshift-monitoring -f
+----
+
 == Grafana Operator
 
 Install `+Grafana Operator+` from Openshift marketplace.
@@ -87,39 +121,6 @@ Create multiple `+GrafanaDashboard+` to visualize metrics.
 [source,shell]
 ----
 oc apply -f grafana-operator/dashboards
-----
-
-=== Alertmanager
-
-Deploy an HTTP server to receive the alerts from Alertmanager.
-
-[source,shell]
-----
-oc apply -f cmo/alertmanager/deploy-receiver.yml -n openshift-monitoring
-----
-
-Configure Alertmanager to send alerts to this remote receiver.
-
-[source,yaml]
-----
-include::alertmanager/alertmanager.yaml[]
-----
-
-The Alertmanager configuration can be updated replacing the content of the alertmanager-main `+Secret+`.
-
-[source,shell]
-----
-oc create secret generic alertmanager-main \
-    --from-file=alertmanager.yaml=alertmanager/alertmanager.yaml \
-        --dry-run -o=yaml -n openshift-monitoring |\
-            oc replace secret --filename=- -n openshift-monitoring
-----
-
-Check if the alerts are being processed by the receiver.
-
-[source,shell]
-----
-oc logs -l component=webhook-receiver -n openshift-monitoring -f
 ----
 
 == References

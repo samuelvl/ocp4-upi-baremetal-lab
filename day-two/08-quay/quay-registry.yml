@@ -1,0 +1,40 @@
+---
+apiVersion: quay.redhat.com/v1
+kind: QuayRegistry
+metadata:
+  name: openshift
+spec:
+  configBundleSecret: quay-config
+  components:
+    - kind: postgres
+      managed: false
+    - kind: redis
+      managed: false
+    - kind: objectstorage
+      managed: false
+    - kind: clair
+      managed: false
+    - kind: route
+      managed: true
+    - kind: mirror
+      managed: false
+    - kind: horizontalpodautoscaler
+      managed: false
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: quay-config
+stringData:
+  ssl.cert: |
+    -----BEGIN CERTIFICATE-----
+    MIIGCDCCA/CgAwIBAgIRAJPJu9Km/7ECuxo0EuBDYJUwD...
+    -----END CERTIFICATE-----
+  ssl.key: |
+    -----BEGIN RSA PRIVATE KEY-----
+    MIIJKAIBAAKCAgEA3hEDD8Cb1OnR6Nj9vbOqyCaIp/Num...
+    -----END RSA PRIVATE KEY-----
+  config.yaml: |
+    ACTION_LOG_ARCHIVE_LOCATION: default
+    ...

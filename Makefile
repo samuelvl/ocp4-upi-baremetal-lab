@@ -5,10 +5,10 @@ TF_FILES_PATH     := src
 TF_BACKEND_CONF   := configuration/backend
 TF_VARIABLES      := configuration/tfvars
 LIBVIRT_IMGS_PATH := images
-OCP_VERSION       := 4.6.8
+OCP_VERSION       := 4.7.6
 OCP_RELEASE       := $(shell echo $(OCP_VERSION) | head -c 3)
 OCP_INSTALLER     := openshift-install
-RHCOS_VERSION     := 4.6.8
+RHCOS_VERSION     := 4.7.0
 RHCOS_IMAGE_PATH  := $(LIBVIRT_IMGS_PATH)/rhcos-${RHCOS_VERSION}-x86_64-qemu.x86_64.qcow2
 FCOS_VERSION      := 32.20200629.3.0
 FCOS_IMAGE_PATH   := $(LIBVIRT_IMGS_PATH)/fedora-coreos-$(FCOS_VERSION).x86_64.qcow2
@@ -72,6 +72,7 @@ changes:
 	$(info Get changes in infrastructure resources...)
 	$(TERRAFORM) plan \
 		-var=OCP_VERSION=$(OCP_VERSION) \
+		-var=RHCOS_VERSION=$(RHCOS_VERSION) \
 		-var=OCP_ENVIRONMENT=$(ENVIRONMENT) \
 		-var-file="$(TF_VARIABLES)/default.tfvars" \
 		-var-file="$(TF_VARIABLES)/$(ENVIRONMENT).tfvars" \
@@ -107,6 +108,7 @@ clean-infra:
 	$(TERRAFORM) destroy \
 		-auto-approve \
 		-var=OCP_VERSION=$(OCP_VERSION) \
+		-var=RHCOS_VERSION=$(RHCOS_VERSION) \
 		-var=OCP_ENVIRONMENT=$(ENVIRONMENT) \
 		-var-file="$(TF_VARIABLES)/default.tfvars" \
 		-var-file="$(TF_VARIABLES)/$(ENVIRONMENT).tfvars" \

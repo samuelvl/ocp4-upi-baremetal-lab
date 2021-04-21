@@ -28,8 +28,15 @@ Install `+Local Storage Operator+` from Openshift marketplace.
 [source,shell]
 ----
 oc apply -f lso/
-oc patch installplan ${installplan_name} \
-  --type=merge -n openshift-lso -p='{"spec": {"approved": true}}'
+oc get installplan -n openshift-lso \
+    -o go-template='
+        {{range .items}}
+            {{if eq .spec.approved false}}
+                {{.metadata.name}}{{"\n"}}
+            {{end}}
+        {{end}}' |\
+            xargs oc patch installplan -n openshift-lso \
+                --type=merge -p='{"spec": {"approved": true}}'
 ----
 
 Add a disk to each node and label these nodes to schedule the persistent volumes
@@ -37,9 +44,9 @@ created by the `+LSO+` on them.
 
 [source,shell]
 ----
-oc label node worker00 local.storage.openshift.io/lso=generic-scsi-fs
+oc label node worker00 local.storage.openshift.io/lso=prometheus-scsi-fs
 oc label node worker01 local.storage.openshift.io/lso=prometheus-scsi-fs
-oc label node worker02 local.storage.openshift.io/lso=prometheus-scsi-fs
+oc label node worker02 local.storage.openshift.io/lso=generic-scsi-fs
 ----
 
 Get the device ID for the new disk in each node.
@@ -47,7 +54,7 @@ Get the device ID for the new disk in each node.
 [source,shell]
 ----
 $ ls -al /dev/disk/by-id/
-lrwxrwxrwx. 1 root root   9 Oct 29 11:45 scsi-0QEMU_QEMU_HARDDISK_drive-scsi0-0-0-1 -> ../../sdb
+lrwxrwxrwx. 1 root root scsi-0QEMU_QEMU_HARDDISK_drive-scsi0-0-0-1 -> ../../sdb
 ----
 
 Update the `+LocalVolume+` object definition with the disk ID in each node.

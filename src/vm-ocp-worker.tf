@@ -16,7 +16,7 @@ resource "libvirt_volume" "ocp_worker_lso" {
     element(local.ocp_worker, count.index).hostname
   )
   pool   = libvirt_pool.openshift.name
-  size   = 100 * 1073741824 # Bytes
+  size   = 20 * 1073741824 # Bytes
   format = "qcow2"
 }
 
@@ -29,7 +29,7 @@ module "ocp_worker" {
   cpu          = var.ocp_worker.vcpu
   memory       = var.ocp_worker.memory
   libvirt_pool = libvirt_pool.openshift.name
-  os_image     = var.ocp_bootstrap.base_img
+  os_image     = local.ocp_bootstrap.image
   disk_size    = var.ocp_worker.size # Gigabytes
   extra_disks  = [
     libvirt_volume.ocp_worker_lso[count.index].id

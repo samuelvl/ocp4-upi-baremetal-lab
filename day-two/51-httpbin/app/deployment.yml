@@ -1,0 +1,48 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpbin
+  labels:
+    app: httpbin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: httpbin
+  template:
+    metadata:
+      labels:
+        app: httpbin
+    spec:
+      containers:
+        - name: httpbin
+          image: quay.io/verygoodsecurity/httpbin:0.1.40
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: GUNICORN_CMD_ARGS
+              value: >-
+                --capture-output
+                --error-logfile -
+                --access-logfile -
+                --access-logformat '%(h)s %(t)s %(r)s %(s)s Host: %({Host}i)s}'
+          ports:
+            - name: http
+              containerPort: 8000
+          resources:
+            limits:
+              cpu: "500m"
+              memory: 128Mi
+            requests:
+              cpu: "500m"
+              memory: 128Mi
+          livenessProbe:
+            tcpSocket:
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            tcpSocket:
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10

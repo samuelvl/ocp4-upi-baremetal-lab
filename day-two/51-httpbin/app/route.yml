@@ -1,0 +1,18 @@
+---
+apiVersion: v1
+kind: Route
+metadata:
+  name: httpbin
+  labels:
+    app: httpbin
+spec:
+  to:
+    kind: Service
+    name: httpbin
+    weight: 100
+  port:
+    targetPort: http # svc.spec.ports.name
+  tls:
+    insecureEdgeTerminationPolicy: Redirect
+    termination: edge
+  wildcardPolicy: None

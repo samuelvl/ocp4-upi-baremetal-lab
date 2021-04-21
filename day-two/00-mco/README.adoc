@@ -51,8 +51,8 @@ Wait until the `+MachineConfigPool+` applies the change in every node.
 [source,shell]
 ----
 $ oc get mcp worker
-NAME     CONFIG                                             UPDATED   UPDATING   DEGRADED
-worker   rendered-worker-3eb18f28950d2ad512f43d8a7a12d638   True      False      False
+NAME     CONFIG                  UPDATED   UPDATING   DEGRADED
+worker   rendered-worker-xxxxx   True      False      False
 ----
 
 == References

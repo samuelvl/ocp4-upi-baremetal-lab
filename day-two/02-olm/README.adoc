@@ -120,7 +120,7 @@ mirror its images.
 ----
 ./mirror-olm.sh mirror-operator \
     --catalog-path="catalogs/redhat-operators" \
-    --operator-name="quay-operator.v3.4.3" \
+    --operator-name="quay-operator.v3.5.1" \
     --registry-auth="../../output/openshift-install/${OCP_ENVIRONMENT}/pull-secret.json"
 ----
 
@@ -130,7 +130,7 @@ Regular expressions are supported. For example, to mirror all the operator
 releases use the keyword `quay-operator` without the versions.
 ====
 
-The list of images that have been mirror is writen to a file.
+The list of images that have been mirror is written to a file.
 
 [source,shell]
 ----
@@ -140,6 +140,22 @@ catalogs/redhat-operators/operators/${OPERATOR_NAME}
 ----
 
 == Troubleshooting
+
+Get available channels for an operator:
+
+[source,shell]
+----
+oc get packagemanifest ${OPERATOR_NAME} \
+    -o jsonpath='{.status.channels[*].name}{"\n"}' | tr " " "\n"
+----
+
+Get available versions for an operator:
+
+[source,shell]
+----
+oc get packagemanifest ${OPERATOR_NAME} \
+    -o jsonpath='{.status.channels[*].currentCSV}{"\n"}' | tr " " "\n"
+----
 
 Forward catalog service port to query information from localhost.
 

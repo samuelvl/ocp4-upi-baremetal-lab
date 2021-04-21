@@ -2,22 +2,20 @@ global:
   resolve_timeout: 5m
 receivers:
   - name: default
-    webhook_configs:
-      - url: "http://http-logger.openshift-monitoring.svc:8080"
-        send_resolved: true
-        http_config:
-          basic_auth:
-            username: example
-            password: s3cr3t
   - name: watchdog
+  - name: webhook
+    webhook_configs:
+      - url: "http://alertmanager-receiver.openshift-monitoring.svc:6725"
+        send_resolved: true
 route:
   group_wait: 30s
   group_interval: 5m
   repeat_interval: 30s
   receiver: default
   routes:
-    - match:
+    - receiver: watchdog
+      match:
         alertname: Watchdog
-      repeat_interval: 5m
-      receiver: watchdog
-
+      continue: yes
+    - receiver: webhook
+      continue: yes

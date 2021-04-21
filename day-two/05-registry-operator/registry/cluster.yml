@@ -1,9 +1,11 @@
+---
 apiVersion: imageregistry.operator.openshift.io/v1
 kind: Config
 metadata:
   name: cluster
 spec:
-  logging: 2
+  logLevel: Normal
+  operatorLogLevel: Normal
   managementState: Managed
   proxy: {}
   replicas: 1

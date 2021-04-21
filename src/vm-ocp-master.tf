@@ -19,7 +19,7 @@ module "ocp_master" {
   cpu          = var.ocp_master.vcpu
   memory       = var.ocp_master.memory
   libvirt_pool = libvirt_pool.openshift.name
-  os_image     = var.ocp_bootstrap.base_img
+  os_image     = local.ocp_bootstrap.image
   disk_size    = var.ocp_master.size # Gigabytes
   network      = {
     name = libvirt_network.openshift.name

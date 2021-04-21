@@ -23,6 +23,11 @@ passwd:
       system: true
       no_create_home: true
       shell: /usr/sbin/nologin
+    - name: s3
+      uid: 9996
+      system: true
+      no_create_home: true
+      shell: /usr/sbin/nologin
     - name: psql
       uid: 26
       system: true
@@ -66,24 +71,30 @@ storage:
         name: quay
       group:
         name: quay
-    - path: /var/lib/quay/data
+    - path: /var/lib/quay
       mode: 0755
       user:
         name: quay
       group:
         name: quay
-    - path: /var/lib/quay/config
+    - path: /var/lib/quay/extra_ca_certs
       mode: 0755
       user:
         name: quay
       group:
         name: quay
-    - path: /var/lib/quay/config/extra_ca_certs
+    - path: /etc/s3
       mode: 0755
       user:
-        name: quay
+        name: s3
       group:
-        name: quay
+        name: s3
+    - path: /var/lib/s3/data
+      mode: 0755
+      user:
+        name: s3
+      group:
+        name: s3
     - path: /etc/psql
       mode: 0755
       user:
@@ -251,7 +262,7 @@ storage:
         inline: |
           DEBUGLOG=false
           IGNORE_VALIDATION=false
-    - path: /etc/quay/create-quay-user.sh
+    - path: /etc/quay/create-user.sh
       overwrite: true
       mode: 0740
       user:
@@ -272,7 +283,7 @@ storage:
             done
 
             # Create the user in the public.user table
-            psql postgresql://${psql_user}:${psql_pass}@${fqdn}:${psql_port}/${psql_db} \
+            psql postgresql://${psql_user}:${psql_pass}@${psql_host}:${psql_port}/${psql_db} \
             -c "INSERT INTO public.user
                     (uuid,
                     username,
@@ -296,7 +307,7 @@ storage:
                     '1990-01-01 00:00:00.000000',
                     '1990-01-01 00:00:00.000000'
                 ON CONFLICT DO NOTHING;"
-    - path: /etc/quay/delete-quay-user.sh
+    - path: /etc/quay/delete-user.sh
       overwrite: true
       mode: 0740
       user:
@@ -307,9 +318,9 @@ storage:
         inline: |
           #!/usr/bin/env bash
           username=$${1}
-          psql postgresql://${psql_user}:${psql_pass}@${fqdn}:${psql_port}/${psql_db} \
+          psql postgresql://${psql_user}:${psql_pass}@${psql_host}:${psql_port}/${psql_db} \
               -c "DELETE FROM public.user WHERE username = '$${username}'"
-    - path: /var/lib/quay/config/config.yaml
+    - path: /var/lib/quay/config.yaml
       overwrite: true
       mode: 0640
       user:
@@ -325,24 +336,30 @@ storage:
           AUTHENTICATION_TYPE: Database
           AVATAR_KIND: local
           BUILDLOGS_REDIS:
-            host: ${fqdn}
-            password: ${redis_pass}
+            host: ${redis_host}
             port: ${redis_port}
+            password: ${redis_pass}
           USER_EVENTS_REDIS:
-            host: ${fqdn}
-            password: ${redis_pass}
+            host: ${redis_host}
             port: ${redis_port}
+            password: ${redis_pass}
           CONTACT_INFO: [ "https://changeme.io" ]
           DATABASE_SECRET_KEY: 9fac3284-e4a9-483b-bb9f-6501f65f4fd6
           DB_CONNECTION_ARGS:
             autorollback: true
             threadlocals: true
-          DB_URI: postgresql://${psql_user}:${psql_pass}@${fqdn}:${psql_port}/${psql_db}
+          DB_URI: postgresql://${psql_user}:${psql_pass}@${psql_host}:${psql_port}/${psql_db}
           DEFAULT_TAG_EXPIRATION: 2w
           DISTRIBUTED_STORAGE_CONFIG:
             default:
-              - LocalStorage
-              - storage_path: /datastorage/registry
+              - RadosGWStorage
+              - hostname: ${s3_host}
+                port: ${s3_port}
+                bucket_name: ${s3_bucket}
+                access_key: ${s3_user}
+                secret_key: ${s3_pass}                    
+                is_secure: false
+                storage_path: /datastorage/registry
           DISTRIBUTED_STORAGE_DEFAULT_LOCATIONS: []
           DISTRIBUTED_STORAGE_PREFERENCE: [ "default" ]
           FEATURE_ACI_CONVERSION: false
@@ -355,10 +372,12 @@ storage:
           FEATURE_BUILD_SUPPORT: false
           FEATURE_CHANGE_TAG_EXPIRATION: false
           FEATURE_DIRECT_LOGIN: true
+          FEATURE_GENERAL_OCI_SUPPORT: true
           FEATURE_GITHUB_BUILD: false
           FEATURE_GITHUB_LOGIN: false
           FEATURE_GITLAB_BUILD: false
           FEATURE_GOOGLE_LOGIN: false
+          FEATURE_HELM_OCI_SUPPORT: true
           FEATURE_INVITE_ONLY_USER_CREATION: false
           FEATURE_MAILING: false
           FEATURE_NONSUPERUSER_TEAM_SYNCING_SETUP: false
@@ -417,7 +436,7 @@ storage:
           USE_CDN: false
           USER_RECOVERY_TOKEN_LIFETIME: 30m
           USERFILES_LOCATION: default
-    - path: /var/lib/quay/config/ssl.cert
+    - path: /var/lib/quay/ssl.cert
       overwrite: true
       mode: 0644
       user:
@@ -427,7 +446,7 @@ storage:
       contents:
         inline: |
           ${quay_tls_cert}
-    - path: /var/lib/quay/config/ssl.key
+    - path: /var/lib/quay/ssl.key
       overwrite: true
       mode: 0640
       user:
@@ -437,7 +456,7 @@ storage:
       contents:
         inline: |
           ${quay_tls_key}
-    - path: /var/lib/quay/config/extra_ca_certs/ca-bundle.crt
+    - path: /var/lib/quay/extra_ca_certs/ca-bundle.crt
       overwrite: true
       mode: 0644
       user:
@@ -447,6 +466,39 @@ storage:
       contents:
         inline: |
           ${quay_ca_bundle}
+    - path: /etc/s3/configuration.env
+      overwrite: true
+      mode: 0640
+      user:
+        name: s3
+      group:
+        name: s3
+      contents:
+        inline: |
+          MINIO_ROOT_USER=${s3_user}
+          MINIO_ROOT_PASSWORD=${s3_pass}
+    - path: /etc/s3/create-bucket.sh
+      overwrite: true
+      mode: 0640
+      user:
+        name: s3
+      group:
+        name: s3
+      contents:
+        inline: |
+          #!/usr/bin/env bash
+          bucket=$${1}
+          /usr/bin/mc config host add s3 \
+              http://${s3_host}:${s3_port} ${s3_user} ${s3_pass} --api S3v4
+          
+          # Wait until the S3 server is ready
+          while ! /usr/bin/mc stat s3 2> /dev/null; do
+              echo "S3 server is down, waiting until it is running..."
+              sleep 1;
+          done
+
+          # Create new bucket
+          /usr/bin/mc mb s3/$${bucket} || true
     - path: /etc/psql/configuration.env
       overwrite: true
       mode: 0640
@@ -561,8 +613,7 @@ systemd:
             --publish  ${quay_port}:8080 \
             --publish  ${quay_port_tls}:8443 \
             --env-file /etc/quay/configuration.env \
-            --volume   /var/lib/quay/config:/conf/stack:z \
-            --volume   /var/lib/quay/data:/datastorage:z \
+            --volume   /var/lib/quay:/conf/stack:z \
                 ${quay_image}
         Restart=on-failure
         RestartSec=5
@@ -586,10 +637,58 @@ systemd:
         ExecStartPre=-/bin/podman pull ${quay_image}
         ExecStart=/bin/podman run --name %N --rm \
             --entrypoint /bin/bash \
-            --volume     /etc/quay/create-quay-user.sh:/quay-registry/create-quay-user.sh:z \
-            --volume     /etc/quay/delete-quay-user.sh:/quay-registry/src/delete-quay-user.sh:z \
+            --volume     /etc/quay/create-user.sh:/quay-registry/create-user.sh:z \
+            --volume     /etc/quay/delete-user.sh:/quay-registry/src/delete-user.sh:z \
                 ${quay_image} \
-                    /quay-registry/create-quay-user.sh ${quay_user} ${quay_pass}
+                    /quay-registry/create-user.sh ${quay_user} ${quay_pass}
+        ExecStop=-/bin/podman rm -f %N
+
+        [Install]
+        WantedBy=multi-user.target
+    - name: s3.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Minio: Object Storage for the era of the hybrid cloud
+        Documentation=https://docs.min.io
+        After=network-online.target
+        Wants=network-online.target
+
+        [Service]
+        Type=simple
+        TimeoutStartSec=180
+        StandardOutput=journal
+        ExecStartPre=-/bin/podman pull ${s3_image}
+        ExecStart=/bin/podman run --name %N --rm \
+            --publish  ${s3_port}:9000 \
+            --env-file /etc/s3/configuration.env \
+            --volume   /var/lib/s3/data:/data:z \
+                ${s3_image} server /data
+        Restart=on-failure
+        RestartSec=5
+        ExecStop=/bin/podman stop %N
+        ExecReload=/bin/podman restart %N
+
+        [Install]
+        WantedBy=multi-user.target
+    - name: s3-buckets.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Create Minio S3 buckets 
+        After=s3.service
+        Requires=s3.service
+
+        [Service]
+        Type=oneshot
+        TimeoutStartSec=180
+        StandardOutput=journal
+        ExecStartPre=-/bin/podman pull ${s3_client_image}
+        ExecStart=/bin/podman run --name %N --rm \
+            --entrypoint /bin/bash \
+            --volume     /etc/s3/create-bucket.sh:/opt/create-bucket.sh:z \
+                ${s3_client_image} \
+                    /opt/create-bucket.sh ${s3_bucket}
         ExecStop=-/bin/podman rm -f %N
 
         [Install]

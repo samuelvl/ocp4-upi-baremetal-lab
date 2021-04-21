@@ -4,6 +4,7 @@ locals {
     fqdn     = format("helper.%s", var.dns.domain)
     ip       = lookup(var.ocp_inventory, "helper").ip
     mac      = lookup(var.ocp_inventory, "helper").mac
+    image    = "images/fedora-coreos-32.20200629.3.0.x86_64.qcow2"
   }
 
   registry = {
@@ -32,7 +33,7 @@ resource "libvirt_ignition" "helper_node" {
 resource "libvirt_volume" "helper_node_image" {
   name   = format("%s-baseimg.qcow2", local.helper_node.hostname)
   pool   = libvirt_pool.openshift.name
-  source = var.helper_node.base_img
+  source = local.helper_node.image
   format = "qcow2"
 }
 
