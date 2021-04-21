@@ -11,6 +11,8 @@ data:
         node-role.kubernetes.io/infra: ""
     prometheusK8s:
       retention: 24h
+      externalLabels:
+        environment: lab
       nodeSelector:
         node-role.kubernetes.io/infra: ""
       volumeClaimTemplate:
