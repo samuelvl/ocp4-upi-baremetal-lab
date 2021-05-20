@@ -1,0 +1,41 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpbin
+  labels:
+    app: httpbin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: httpbin
+  template:
+    metadata:
+      labels:
+        app: httpbin
+    spec:
+      containers:
+        - name: httpbin
+          image: image-registry.openshift-image-registry.svc:5000/certified-images/httpbin:0.1.40
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8000
+          resources:
+            limits:
+              cpu: "500m"
+              memory: 128Mi
+            requests:
+              cpu: "500m"
+              memory: 128Mi
+          livenessProbe:
+            tcpSocket:
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            tcpSocket:
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10

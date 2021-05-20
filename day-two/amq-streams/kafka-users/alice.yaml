@@ -1,0 +1,40 @@
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaUser
+metadata:
+  name: alice
+  labels:
+    strimzi.io/cluster: ephemeral
+spec:
+  authentication:
+    type: scram-sha-512
+  authorization:
+    type: simple
+    acls:
+      - resource:
+          type: topic
+          name: hello
+          patternType: literal
+        operation: All
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  creationTimestamp: "2021-05-19T14:49:20Z"
+  name: alice
+  labels:
+    app.kubernetes.io/instance: alice
+    app.kubernetes.io/managed-by: strimzi-user-operator
+    app.kubernetes.io/name: strimzi-user-operator
+    app.kubernetes.io/part-of: strimzi-alice
+    strimzi.io/cluster: ephemeral
+    strimzi.io/kind: KafkaUser
+type: Opaque
+stringData:
+  password: changeme
+  sasl.jaas.config: >-
+    org.apache.kafka.common.security.scram.ScramLoginModule required
+    username="alice"
+    password="changeme"
+    ;

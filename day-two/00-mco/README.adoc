@@ -6,7 +6,7 @@ changes to essentially everything between the kernel and kubelet.
 
 == Machine Config Pool
 
-When you create a new node role (e.g. infrastructure), a `+MachineConfigPool+`
+When you create a new node role (e.g. infrastructure), a `MachineConfigPool`
 object must be created to handle changes and upgrades for this kind of nodes.
 
 [source,yaml]
@@ -14,14 +14,14 @@ object must be created to handle changes and upgrades for this kind of nodes.
 include::mcp/infra.yml[]
 ----
 
-Create the object using the `+oc apply+` command on this file.
+Create the object using the `oc apply` command on this file.
 
 [source,shell]
 ----
 oc apply -f mcp/infra.yml
 ----
 
-Then, add the corresponding `+node-role.kubernetes.io/${role}+` label to the
+Then, add the corresponding `node-role.kubernetes.io/${role}` label to the
 nodes.
 
 [source,shell]
@@ -39,14 +39,14 @@ Create a `MachineConfig` object with the custom configuration.
 include::mc/50-worker-dummyfile.yml[]
 ----
 
-Create the object using the `+oc apply+` command on this file.
+Create the object using the `oc apply` command on this file.
 
 [source,shell]
 ----
 oc apply -f mc/50-worker-dummyfile.yml
 ----
 
-Wait until the `+MachineConfigPool+` applies the change in every node.
+Wait until the `MachineConfigPool` applies the change in every node.
 
 [source,shell]
 ----

@@ -1,0 +1,13 @@
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: jaeger-product
+  labels:
+    operators.coreos.com/jaeger-product.openshift-operators: ""
+spec:
+  name: jaeger-product
+  channel: "1.20-stable"
+  installPlanApproval: Automatic
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace

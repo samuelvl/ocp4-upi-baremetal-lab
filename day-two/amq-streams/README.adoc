@@ -1,0 +1,58 @@
+= AMQ Streams
+
+Deploy AMQ Streams version 1.7.
+
+
+== Installation
+
+Install de AMQ Streams operator:
+
+[source,shell]
+----
+oc apply -f operator -n amq-streams-operator
+----
+
+== Kafka Cluster
+
+Create a new namespace to deploy the Kakfka cluster:
+
+[source,shell]
+----
+oc create ns kafka-cluster
+oc label ns kafka-cluster operators.coreos.com/amq-streams=""
+----
+
+Create a new `Kafka` ephemeral cluster (no persistent storage) with one single
+replica:
+
+[source,shell]
+----
+oc apply -f kafka-clusters/ephemeral.yaml -n kafka-cluster
+----
+
+Create some topics:
+
+[source,shell]
+----
+oc apply -f kafka-topics -n kafka-cluster
+----
+
+Create some users:
+
+[source,shell]
+----
+oc apply -f kafka-users -n kafka-cluster
+----
+
+Write and read some messages:
+
+[source,shell]
+----
+ansible-playbook ansible-kafka-client/main.yaml
+----
+
+== References
+
+- https://access.redhat.com/documentation/en-us/red_hat_amq/2021.q2/html/deploying_and_upgrading_amq_streams_on_openshift/operator-hub-str
+- https://github.com/kow3ns/kubernetes-kafka/blob/master/manifests/README.md
+- https://kafka-python.readthedocs.io/en/master/index.html

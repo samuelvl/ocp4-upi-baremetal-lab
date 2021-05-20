@@ -1,0 +1,33 @@
+---
+- hosts: localhost
+  vars:
+    topic_data: { 'user': 'alice' }
+  tasks:
+    - name: Publish a record in Kafka cluster
+      kafka_producer:
+        bootstrap: ephemeral-kafka-ingress-bootstrap-kafka-cluster.apps.ocp.bmlab.int:443
+        topic: hello
+        data: "{{ topic_data }}"
+        tls:
+          ca_certificate: files/certificate.pem
+      tags:
+        - kafka
+        - producer
+
+    - name: Read records published in Kafka cluster from previous task
+      kafka_consumer:
+        bootstrap: ephemeral-kafka-ingress-bootstrap-kafka-cluster.apps.ocp.bmlab.int:443
+        topic: hello
+        tls:
+          ca_certificate: files/certificate.pem
+      register: kafka_data
+      tags:
+        - kafka
+        - consumer
+
+    - name: Verify that data has been written to Kafka
+      assert:
+        that:
+          - topic_data == kafka_data.data
+        success_msg: "Published and read data match"
+        fail_msg: "Published and read data does not match"

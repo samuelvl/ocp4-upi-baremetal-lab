@@ -17,7 +17,7 @@ This is a demo environment and it should never be used in production.
 
 == Requirements
 
-The `+requirements.sh+` script will install all needed requirements:
+The `requirements.sh` script will install all needed requirements:
 
 [source,shell]
 ----
@@ -27,7 +27,7 @@ make require
 == QEMU
 
 The provider does not currently support to create volumes with different mode
-than `+root:root+` so QEMU agent must run as priviledged:
+than `root:root` so QEMU agent must run as priviledged:
 
 [source,shell]
 ----
@@ -51,8 +51,8 @@ Set the current environment:
 export OCP_ENVIRONMENT="lab"
 ----
 
-Get your pull secret from `+cloud.redhat.com+` and copy it to the
-`+src/openshift-install/${OCP_ENVIRONMENT}+` folder (create the folder for your
+Get your pull secret from `cloud.redhat.com` and copy it to the
+`src/openshift-install/${OCP_ENVIRONMENT}` folder (create the folder for your
 environment if it does not exist):
 
 [source,shell]
@@ -85,7 +85,7 @@ https://registry.ocp.bmlab.int:5443).
 
 === Bootstrap
 
-Power on `+bootstrap+` node:
+Power on `bootstrap` node:
 
 [source,shell]
 ----
@@ -160,7 +160,7 @@ oc get nodes
 == Day-2 operations
 
 Once Openshift 4 has been deployed in can be configured with the instructions in
-`+day-two+` folder resources.
+`day-two` folder resources.
 
 == Upgrade cluster
 

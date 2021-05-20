@@ -7,14 +7,14 @@ knowledge of the underlying storage infrastructure.
 
 == NFS
 
-When using `+NFS+` as storage backend, the `+PV+` must be previously created.
+When using `NFS` as storage backend, the `PV` must be previously created.
 
 [source,yaml]
 ----
 include::nfs/etcd-backup-pv.yml[]
 ----
 
-Create the object using the `+oc apply+` command on this file.
+Create the object using the `oc apply` command on this file.
 
 [source,shell]
 ----
@@ -23,7 +23,7 @@ oc apply -f nfs/etcd-backup-pv.yml
 
 == Local Storage Operator (LSO)
 
-Install `+Local Storage Operator+` from Openshift marketplace.
+Install `Local Storage Operator` from Openshift marketplace.
 
 [source,shell]
 ----
@@ -40,7 +40,7 @@ oc get installplan -n openshift-lso \
 ----
 
 Add a disk to each node and label these nodes to schedule the persistent volumes
-created by the `+LSO+` on them.
+created by the `LSO` on them.
 
 [source,shell]
 ----
@@ -57,14 +57,14 @@ $ ls -al /dev/disk/by-id/
 lrwxrwxrwx. 1 root root scsi-0QEMU_QEMU_HARDDISK_drive-scsi0-0-0-1 -> ../../sdb
 ----
 
-Update the `+LocalVolume+` object definition with the disk ID in each node.
+Update the `LocalVolume` object definition with the disk ID in each node.
 
 [source,yaml]
 ----
 include::lso/local-volumes/generic-scsi-fs.yml[]
 ----
 
-Create the object using the `+oc apply+` command on this file.
+Create the object using the `oc apply` command on this file.
 
 [source,shell]
 ----

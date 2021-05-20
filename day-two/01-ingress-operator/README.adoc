@@ -6,7 +6,7 @@ specified by OpenShift Route and Kubernetes Ingress resources.
 
 == Configuration
 
-Modify the `+IngressController+` object to increase the number of replicas,
+Modify the `IngressController` object to increase the number of replicas,
 allocate in infrastructure nodes or tune the configuration.
 
 [source,yaml]
@@ -14,7 +14,7 @@ allocate in infrastructure nodes or tune the configuration.
 include::ingress-controller/default.yml[]
 ----
 
-Create the object using the `+oc apply+` command on this file.
+Create the object using the `oc apply` command on this file.
 
 [source,shell]
 ----

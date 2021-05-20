@@ -5,18 +5,78 @@ application that lets you distribute Docker images.
 
 == Configuration
 
-Modify the `+Config+` object to configure Openshift internal registry.
+Modify the `Config` object to configure Openshift internal registry.
 
 [source,yaml]
 ----
 include::registry/cluster.yml[]
 ----
 
-Create the object using the `+oc apply+` command on this file.
+Create the object using the `oc apply` command on this file.
 
 [source,shell]
 ----
 oc apply -f registry/cluster.yml
+----
+
+== RBAC
+
+Create a namespace to push images:
+
+[source,shell]
+----
+export OCP_NS="myproject"
+
+oc create ns ${OCP_NS}
+----
+
+Create a `dockercfg.json` file from the `builder` service account to push images
+to Openshift internal registry:
+
+[source,shell]
+----
+export OCP_REGISTRY=$(oc get route default-route \
+    -o jsonpath='{.spec.host}' -n openshift-image-registry)
+
+cat <<-EOF > dockercfg-builder.json
+{
+    "auths": {
+        "${OCP_REGISTRY}": {
+            "auth": "$(echo -n \
+                $(echo -n \
+                    builder:$(oc serviceaccounts get-token builder -n ${OCP_NS}) \
+                        | base64 -w0))"
+        }
+    }
+}
+EOF
+----
+
+Publish the image to the registry:
+
+[source,shell]
+----
+skopeo copy \
+    docker://quay.io/verygoodsecurity/httpbin:0.1.40 \
+    docker://${OCP_REGISTRY}/${OCP_NS}/httpbin:0.1.40 \
+    --authfile=dockercfg-builder.json \
+    --dest-tls-verify=false 
+----
+
+Verify that the image has been uploaded:
+
+[source,shell]
+----
+$ oc get is httpbin -n ${OCP_NS}
+NAME      IMAGE REPOSITORY                    TAGS     UPDATED
+httpbin   ${OCP_REGISTRY}/${OCP_NS}/httpbin   0.1.40   About a minute ag
+----
+
+Deploy the application using the internal registry image:
+
+[source,shell]
+----
+oc apply -f testing -n ${OCP_NS}
 ----
 
 == References

@@ -18,3 +18,4 @@ spec:
   storage:
     emptyDir: {}
     managementState: Managed
+  defaultRoute: true

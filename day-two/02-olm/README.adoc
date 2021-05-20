@@ -17,7 +17,7 @@ oc patch OperatorHub cluster --type json \
 
 == Mirror operator catalog
 
-Mirror the catalog image for `+redhat-operators+` (certified-operators and
+Mirror the catalog image for `redhat-operators` (certified-operators and
 comunnity-operators are also available).
 
 [source,shell]
@@ -85,7 +85,7 @@ source environment/${OCP_ENVIRONMENT}.env
     --registry-auth="../../output/openshift-install/${OCP_ENVIRONMENT}/pull-secret.json"
 ----
 
-Create the `+CatalogSource+` object.
+Create the `CatalogSource` object.
 
 [source,shell]
 ----
@@ -95,7 +95,7 @@ oc apply -f catalog-source/${OCP_ENVIRONMENT}/community-operators-disconnected.y
 oc apply -f catalog-source/${OCP_ENVIRONMENT}/redhat-marketplace-disconnected.yml
 ----
 
-Create the `+ImageContentSourcePolicy+` object.
+Create the `ImageContentSourcePolicy` object.
 
 [source,shell]
 ----
@@ -113,7 +113,7 @@ Find the operator to install in the database.
 less catalogs/redhat-operators/index.txt
 ----
 
-For example, select the `+quay-operator+` from `+redhat-operators+` catalog to 
+For example, select the `quay-operator` from `redhat-operators` catalog to 
 mirror its images.
 
 [source,shell]

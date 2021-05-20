@@ -7,14 +7,14 @@ are up to date.
 
 == Configuration
 
-The cluster-monitoring-config `+ConfigMap+` configures how the stack is deployed.
+The cluster-monitoring-config `ConfigMap` configures how the stack is deployed.
 
 [source,yaml]
 ----
 include::cmo/cluster-monitoring-config.yml[]
 ----
 
-Configure the stack by using the `+oc apply+` command on this file.
+Configure the stack by using the `oc apply` command on this file.
 
 [source,shell]
 ----
@@ -38,7 +38,7 @@ include::alertmanager/alertmanager.yaml[]
 ----
 
 The Alertmanager configuration can be updated replacing the content of the
-alertmanager-main `+Secret+`.
+alertmanager-main `Secret`.
 
 [source,shell]
 ----
@@ -57,14 +57,14 @@ oc logs -l component=webhook-receiver -n openshift-monitoring -f
 
 == Grafana Operator
 
-Install `+Grafana Operator+` from Openshift marketplace.
+Install `Grafana Operator` from Openshift marketplace.
 
 [source,shell]
 ----
 oc apply -f grafana-operator/
 ----
 
-Deploy a `+Grafana+` instance.
+Deploy a `Grafana` instance.
 
 [source,shell]
 ----
@@ -94,14 +94,14 @@ virsh net-update openshift add dns-host \
            </host>"
 ----
 
-Create a `+ServiceAccount+` to allow Grafana to read metrics from Prometheus.
+Create a `ServiceAccount` to allow Grafana to read metrics from Prometheus.
 
 [source,shell]
 ----
 oc apply -f grafana-operator/datasources/00-prometheus-rbac.yml
 ----
 
-Retrieve credentials from this  `+ServiceAccount+`.
+Retrieve credentials from this  `ServiceAccount`.
 
 [source,shell]
 ----
@@ -109,14 +109,14 @@ SA_TOKEN_NAME=$(oc get sa prometheus-reader -o jsonpath='{range .secrets[*]}{.na
 export PROMETHEUS_TOKEN=$(oc get secret $SA_TOKEN_NAME -o jsonpath='{.data.token}' | base64 -d)
 ----
 
-Create a `+GrafanaDataSource+` to read metrics from Thanos.
+Create a `GrafanaDataSource` to read metrics from Thanos.
 
 [source,shell]
 ----
 envsubst < grafana-operator/datasources/01-prometheus.yml.tpl | oc apply -f -
 ----
 
-Create multiple `+GrafanaDashboard+` to visualize metrics.
+Create multiple `GrafanaDashboard` to visualize metrics.
 
 [source,shell]
 ----

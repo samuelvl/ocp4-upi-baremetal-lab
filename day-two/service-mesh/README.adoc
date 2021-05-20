@@ -1,0 +1,94 @@
+= OpenShift Service Mesh
+
+Deploy OSSM (OpenShift Service Mesh) version 2.0.
+
+== Installation
+
+Install ElasticSearch operator:
+
+[source,shell]
+----
+oc apply -f operators/elasticsearch -n openshift-operators-redhat
+----
+
+Install Jaeger operator:
+
+[source,shell]
+----
+oc apply -f operators/jaeger -n openshift-operators
+----
+
+Install Kiali operator:
+
+[source,shell]
+----
+oc apply -f operators/kiali -n openshift-operators
+----
+
+Install OSSM operator:
+
+[source,shell]
+----
+oc apply -f operators/ossm -n openshift-operators
+----
+
+== Control Plane
+
+Create the `istio-system` namespace:
+
+[source,shell]
+----
+oc create ns istio-system
+----
+
+Deploy a new `ServiceMeshControlPlane` in this namespace:
+
+[source,shell]
+----
+oc apply -f control-planes/basic -n istio-system
+----
+
+== Testing
+
+Create an ephemeral namespace:
+
+[source,shell]
+----
+oc create ns ossm-testing
+----
+
+Deploy an httpbin instance in this namespace:
+
+[source,shell]
+----
+oc apply -f testing/httpbin -n ossm-testing
+----
+
+Expose the application in the `istio-system` namespace:
+
+[source,shell]
+----
+oc create route edge httpbin-ossm-testing --service istio-ingressgateway \
+    --port http2 -n istio-system
+----
+
+Verify the application is exposed in the mesh:
+
+[source,shell]
+----
+$ curl -I -k https://httpbin-ossm-testing-istio-system.apps.ocp.bmlab.int/status/200
+HTTP/1.1 200 OK
+server: istio-envoy
+----
+
+Clean resources:
+
+[source,shell]
+----
+oc delete route httpbin-ossm-testing -n istio-system
+oc delete ns ossm-testing
+----
+
+== References
+
+- https://docs.openshift.com/container-platform/4.7/service_mesh/v2x/installing-ossm.html

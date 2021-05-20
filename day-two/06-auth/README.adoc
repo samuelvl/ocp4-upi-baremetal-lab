@@ -1,13 +1,13 @@
 = Authentication
 
-Create a local user in `+httpasswd+` format.
+Create a local user in `httpasswd` format.
 
 [source,shell]
 ----
 htpasswd -B oauth/htpasswd.txt ${USER}
 ----
 
-Create an Openshift `+Secret+` in `+openshift-config+` namespace to store this
+Create an Openshift `Secret` in `openshift-config` namespace to store this
 file.
 
 [source,shell]
@@ -16,7 +16,7 @@ oc create secret generic oauth-htpasswd \
     --from-file=htpasswd=oauth/htpasswd.txt -n openshift-config
 ----
 
-Update `+OAuth+` CR to use this secret as source for local authentication.
+Update `OAuth` CR to use this secret as source for local authentication.
 
 [source,shell]
 ----
